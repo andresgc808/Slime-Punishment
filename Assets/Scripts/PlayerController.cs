@@ -17,6 +17,17 @@ public class PlayerController : MonoBehaviour {
         _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
 
         _rb.velocity = _movement * _moveSpeed;
+
+        // calculate angle of mouse, if left click, shoot projectile
+        if (Mouse.current.leftButton.wasPressedThisFrame) {
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            Vector2 direction = (mousePos - (Vector2)transform.position).normalized;
+
+            GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/SlimeProjectile"), transform.position, Quaternion.identity);
+            IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
+            if (projectileComponent != null)
+                projectileComponent.LaunchProjectile(transform.position, direction);
+        }
     }
 
 } 
