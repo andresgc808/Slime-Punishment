@@ -31,14 +31,14 @@ public class WFCGenerator : MonoBehaviour {
             return;
         }
 
-        int maxRetries = 10; // You can adjust this
+        int maxRetries = 50; // You can adjust this
         int currentRetry = 0;
 
         bool finished = false;
         while (!finished && currentRetry < maxRetries) {
             Debug.Log($"StartGeneration: Starting WFC process, Attempt: {currentRetry + 1}");
             // Explicitly initialize the grid
-            wfcData.wfcObject.InitializeGrid();
+            wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
 
             while (!finished) {
                 Debug.Log("StartGeneration: Calling Collapse");
@@ -50,7 +50,7 @@ public class WFCGenerator : MonoBehaviour {
                     }
                 } else {
                     Debug.LogError($"StartGeneration: Cannot Collapse Map, retrying ({currentRetry + 1}/{maxRetries})");
-                    ResetGrid();
+                    //ResetGrid(); dont need to reset anymore
                     break;
                 }
             }
@@ -146,7 +146,7 @@ public class WFCGenerator : MonoBehaviour {
         lowestEntropyCell.collapsed = true;
         wfcData.wfcObject.grid[lowestEntropyCell.x, lowestEntropyCell.y] = lowestEntropyCell;
 
-        Debug.Log($"Collapse: Collapsed cell at x: {lowestEntropyCell.x} y: {lowestEntropyCell.y}, with tile {chosenTile}");
+        Debug.Log($"Collapse: Collapsed cell at x: {lowestEntropyCell.x} y: {lowestEntropyCell.y}, with tile {chosenTile.tileType}");
         return true;
     }
 
@@ -155,7 +155,7 @@ public class WFCGenerator : MonoBehaviour {
         int x = collapsedCell.x;
         int y = collapsedCell.y;
         Tile collapsedTile = collapsedCell.possibleTiles[0];
-        Debug.Log($"Propagate: Collapsed tile is {collapsedTile}");
+        Debug.Log($"Propagate: Collapsed tile is {collapsedTile.tileType}");
 
         PropagateToCell(x, y + 1, collapsedTile, "up");
         PropagateToCell(x, y - 1, collapsedTile, "down");
@@ -165,7 +165,7 @@ public class WFCGenerator : MonoBehaviour {
     }
 
     private void PropagateToCell(int x, int y, Tile collapsedTile, string direction) {
-        Debug.Log($"PropagateToCell: Starting propagate to x:{x} y:{y} from tile: {collapsedTile}, direction: {direction}");
+        Debug.Log($"PropagateToCell: Starting propagate to x:{x} y:{y} from tile: {collapsedTile.tileType}, direction: {direction}");
         if (x < 0 || x >= wfcData.wfcObject.gridSize.x) {
             Debug.Log($"PropagateToCell: Invalid x:{x}, skipping");
             return;
@@ -183,7 +183,7 @@ public class WFCGenerator : MonoBehaviour {
             return;
         }
 
-        Debug.Log($"PropagateToCell: Before filtering possible tiles: {string.Join(", ", cell.possibleTiles)} for cell at x:{x}, y:{y}");
+        Debug.Log($"PropagateToCell: Before filtering possible tiles: {string.Join(", ", cell.possibleTiles.Select(tile => tile.tileType))} for cell at x:{x}, y:{y}");
 
         List<Tile> validTiles = new List<Tile>();
 
@@ -192,41 +192,41 @@ public class WFCGenerator : MonoBehaviour {
         switch (direction) {
             case "up":
                 foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.upConnections != null && collapsedTile.upConnections.Contains(tile.name)) {
+                    if (collapsedTile.upConnections != null && collapsedTile.upConnections.Contains(tile.tileType)) {
                         validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is valid up connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid up connection");
                     } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is not valid up connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid up connection");
                     }
                 }
                 break;
             case "down":
                 foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.downConnections != null && collapsedTile.downConnections.Contains(tile.name)) {
+                    if (collapsedTile.downConnections != null && collapsedTile.downConnections.Contains(tile.tileType)) {
                         validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is valid down connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid down connection");
                     } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is not valid down connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid down connection");
                     }
                 }
                 break;
             case "left":
                 foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.leftConnections != null && collapsedTile.leftConnections.Contains(tile.name)) {
+                    if (collapsedTile.leftConnections != null && collapsedTile.leftConnections.Contains(tile.tileType)) {
                         validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is valid left connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid left connection");
                     } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is not valid left connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid left connection");
                     }
                 }
                 break;
             case "right":
                 foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.rightConnections != null && collapsedTile.rightConnections.Contains(tile.name)) {
+                    if (collapsedTile.rightConnections != null && collapsedTile.rightConnections.Contains(tile.tileType)) {
                         validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is valid right connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid right connection");
                     } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.name} is not valid right connection");
+                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid right connection");
                     }
                 }
                 break;
@@ -235,7 +235,7 @@ public class WFCGenerator : MonoBehaviour {
 
         cell.possibleTiles = validTiles;
 
-        Debug.Log($"PropagateToCell: After filtering possible tiles: {string.Join(", ", cell.possibleTiles)} for cell at x:{x}, y:{y}");
+        Debug.Log($"PropagateToCell: After filtering possible tiles: {string.Join(", ", cell.possibleTiles.Select(tile => tile.tileType))} for cell at x:{x}, y:{y}");
 
         wfcData.wfcObject.grid[x, y] = cell;
 
@@ -253,11 +253,14 @@ public class WFCGenerator : MonoBehaviour {
                 }
 
                 var tile = cell.possibleTiles[0];
-                if (tile.sprite != null) {
-                    Debug.Log($"VisualizeMap: instantiating sprite: {tile}, at x: {x}, y: {y}");
-                    GameObject spriteObject = new GameObject(tile.name);
+                if (tile.possibleSprites != null && tile.possibleSprites.Count > 0) {
+                    int randomIndex = Random.Range(0, tile.possibleSprites.Count);
+                    Sprite chosenSprite = tile.possibleSprites[randomIndex];
+
+                    Debug.Log($"VisualizeMap: instantiating sprite: {chosenSprite}, at x: {x}, y: {y}");
+                    GameObject spriteObject = new GameObject(tile.tileType.ToString());
                     SpriteRenderer renderer = spriteObject.AddComponent<SpriteRenderer>();
-                    renderer.sprite = tile.sprite;
+                    renderer.sprite = chosenSprite;
 
                     // Get the bounds of the sprite
                     var bounds = renderer.sprite.bounds;
@@ -266,7 +269,10 @@ public class WFCGenerator : MonoBehaviour {
 
                     spriteObject.transform.position = new Vector3(x, y, 0) + offset + this.offset;
                     spriteObject.transform.SetParent(spriteParent, true);
+                } else {
+                    Debug.LogError($"VisualizeMap: No valid sprites in cell at x:{x} y:{y}, skipping");
                 }
+
 
             }
         }

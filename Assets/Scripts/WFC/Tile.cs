@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public struct Tile {
-    public Sprite sprite;
-    public string name;
-    public List<string> upConnections;
-    public List<string> downConnections;
-    public List<string> leftConnections;
-    public List<string> rightConnections;
+    public TileType tileType;
+    public List<Sprite> possibleSprites;
+    public List<TileType> upConnections;
+    public List<TileType> downConnections;
+    public List<TileType> leftConnections;
+    public List<TileType> rightConnections;
 
     public override string ToString() {
-        return name;
+        return tileType.ToString();
     }
 }
