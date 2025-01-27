@@ -21,7 +21,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable {
     private void Start() {
         Health = MaxHealth;
     }
-
     public void TakeDamage(float damage) {
          if (Health <= 0) return;
 
@@ -38,6 +37,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable {
              Destroy(gameObject);
 
         }
+    }
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.TryGetComponent(out IProjectile projectile))
+          TakeDamage(projectile.Damage);
+
     }
      private void ExcreteSubstance()
     {

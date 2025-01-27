@@ -1,22 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private float _baseMoveSpeed = 5f; // Track base speed
-    [SerializeField] private float _maxSpeedMultiplier = 1.7f; // max speed to multiply by
-
-    private Vector3 _baseScale; // Store base scale
-    [SerializeField] private float _minSizePercent = 0.5f;
+    [SerializeField] private float _baseMoveSpeed = 5f;
+    [SerializeField] private float _maxSpeedMultiplier = 1.7f;
+    [SerializeField] private float _sizeDecreasePerShot = 0.05f; // percentage
+    [SerializeField] private float _damageIncreasePerShot = 0.10f; // percentage
+    [SerializeField] private float _minSizePercent = 0.2f;
     [SerializeField] private float _maxSizeMultiplier = 1f;
+
+
+    private Vector3 _baseScale;
     private Vector2 _movement;
     private Rigidbody2D _rb;
-
     private PlayerHealth _playerHealth;
-    public float SlimeCost { get; set; } = 2f; // cost per shot
+
+    public float SlimeCostPercent { get; set; } = 2f;
+    public float SizeMultiplier { get; private set; } = 1;
+    public float DamageMultiplier { get; private set; } = 1;
 
     private void Awake()
     {
@@ -25,52 +28,67 @@ public class PlayerController : MonoBehaviour
         if (_playerHealth == null)
             Debug.LogError("PlayerHealth component is missing!");
         _baseMoveSpeed = _moveSpeed;
-        _baseScale = transform.localScale; // gets the initial scale
+        _baseScale = transform.localScale;
     }
 
     private void Update()
     {
         _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
-        // calculate speed and size based on health
-        float healthPercent = Mathf.Clamp01(_playerHealth.Health / _playerHealth.MaxHealth);
-        float speedMultiplier = Mathf.Lerp(_maxSpeedMultiplier, 1f, healthPercent);
-        float sizeMultiplier;
-        if(healthPercent <= 1 && healthPercent >= _minSizePercent)
-           sizeMultiplier = Mathf.Lerp(_minSizePercent, _maxSizeMultiplier, healthPercent);
-        else
-             sizeMultiplier = Mathf.Lerp(_minSizePercent, _maxSizeMultiplier, 1f);
 
+        UpdateMovement();
 
-        _moveSpeed = _baseMoveSpeed * speedMultiplier;
-        transform.localScale = _baseScale * sizeMultiplier; // scale based on the _baseScale
-        _rb.velocity = _movement * _moveSpeed;
-
-
-        // calculate angle of mouse, if left click, shoot projectile
-        if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.Health > 0) // Dont shoot if dead
+        // Handle shooting
+        if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive)
         {
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            Vector2 direction = (mousePos - (Vector2)transform.position).normalized;
-            Vector2 spawnPosition = (Vector2)transform.position + (direction * 0.5f);
+            ShootProjectile();
+        }
+    }
 
-            GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/SlimeProjectile"), spawnPosition, Quaternion.identity);
-            IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
-            if (projectileComponent != null)
+      private void UpdateMovement()
+    {
+        // Calculate speed based on multipliers
+        float speedMultiplier = Mathf.Lerp(1f, _maxSpeedMultiplier, 1 - SizeMultiplier);
+        _moveSpeed = _baseMoveSpeed * speedMultiplier;
+
+        // Apply movement and scale
+        transform.localScale = _baseScale * SizeMultiplier;
+        _rb.velocity = _movement * _moveSpeed;
+    }
+
+    private void ShootProjectile()
+    {
+         // Log for debugging
+         Debug.Log($"Size Multiplier before shot: {SizeMultiplier} Damage Multiplier before shot: {DamageMultiplier}, Local Scale before shot: {transform.localScale}");
+
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 direction = (mousePos - (Vector2)transform.position).normalized;
+        Vector2 spawnPosition = (Vector2)transform.position + (direction * 0.5f);
+
+        GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/SlimeProjectile"), spawnPosition, Quaternion.identity);
+        IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
+        if (projectileComponent != null)
+        {
+            if (projectileComponent is SlimeProjectile slimeProjectile)
             {
-                 Physics2D.IgnoreCollision(GetComponent<Collider2D>(), projectile.GetComponent<Collider2D>(), true);
-                projectileComponent.LaunchProjectile(spawnPosition, direction);
-                // Set projectile damage based on the current scale
-                if(projectileComponent is SlimeProjectile slimeProjectile)
-                {
-                 slimeProjectile.DamageMultiplier = 1/sizeMultiplier;
-                }
-
-                // Decrease stats on shoot
-                _playerHealth.ReduceMaxHealth(SlimeCost);
-
+                 slimeProjectile.DamageMultiplier = DamageMultiplier;
+                 slimeProjectile.SetDamage();
             }
+            
+            projectileComponent.LaunchProjectile(spawnPosition, direction);
+             _playerHealth.ReduceMaxHealth(SlimeCostPercent);
+             AdjustSizeAndDamage();
+              Debug.Log($"Size Multiplier after shot: {SizeMultiplier} Damage Multiplier after shot: {DamageMultiplier}, Local Scale after shot: {transform.localScale}");
         }
     }
 
 
+    private void AdjustSizeAndDamage()
+    {
+        // Reduce size, clamped by the minimum size
+        SizeMultiplier = Mathf.Max(SizeMultiplier * (1 - _sizeDecreasePerShot), _minSizePercent);
+        // Increase damage
+        DamageMultiplier += _damageIncreasePerShot;
+
+        UpdateMovement(); // ensure move speed and scale are updated
+    }
 }
