@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour {
     [SerializeField] private float _moveSpeed = 5f;
 
+    [SerializeField] private LayerMask _projectileLayer;
+
     private Vector2 _movement;
     private Rigidbody2D _rb;
 
@@ -28,6 +30,10 @@ public class PlayerController : MonoBehaviour {
             if (projectileComponent != null)
                 projectileComponent.LaunchProjectile(transform.position, direction);
         }
+    }
+
+    private void OnEnable() {
+        Physics2D.IgnoreLayerCollision(gameObject.layer, _projectileLayer, true);
     }
 
 } 
