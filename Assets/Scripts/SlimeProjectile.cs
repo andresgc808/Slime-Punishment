@@ -5,11 +5,15 @@ using UnityEngine;
 public class SlimeProjectile : MonoBehaviour, IProjectile {
     public Vector2 Direction { get; set; }
     public float Speed { get; set; } = 5f; // Default speed
-    public float Damage { get; set; } = 10f; // Default damage
+    public float BaseDamage { get; set; } = 10f; // Default damage
+    public float DamageMultiplier { get; set; } = 1f;
+    public float Damage {get{return BaseDamage * DamageMultiplier;} }
+    public float healAmount { get; set; } = 10f; // how much to heal
     public GameObject GameObject => gameObject;
     public Transform Transform => transform;
     public float collisionRadius = 0.5f; // Radius to check for collisions
     public LayerMask targetLayer;
+    public LayerMask playerLayer;
     public float lifeTime = 3f; // Projectile lifetime
 
 
