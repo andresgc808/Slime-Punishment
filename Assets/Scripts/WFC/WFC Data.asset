@@ -34,21 +34,21 @@ MonoBehaviour:
       - {fileID: -1645061268, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
       upConnections: 01000000030000000800000009000000
       downConnections: 00000000
-      leftConnections: 0200000006000000
-      rightConnections: 0200000007000000
+      leftConnections: 02000000060000000b000000
+      rightConnections: 02000000070000000b000000
     - tileType: 6
       possibleSprites:
       - {fileID: -162095184, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
       upConnections: 01000000080000000300000009000000
       downConnections: 040000000c000000
       leftConnections: 01000000070000000500000009000000
-      rightConnections: 02000000
+      rightConnections: 020000000b000000
     - tileType: 7
       possibleSprites:
       - {fileID: -1100118827, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
       upConnections: 01000000080000000300000009000000
       downConnections: 050000000d000000
-      leftConnections: 02000000
+      leftConnections: 020000000b000000
       rightConnections: 01000000060000000400000008000000
     - tileType: 8
       possibleSprites:
@@ -56,13 +56,13 @@ MonoBehaviour:
       upConnections: 040000000c000000
       downConnections: 01000000020000000600000007000000
       leftConnections: 01000000090000000700000005000000
-      rightConnections: 03000000
+      rightConnections: 030000000a000000
     - tileType: 9
       possibleSprites:
       - {fileID: 336533385, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
       upConnections: 050000000d000000
       downConnections: 01000000020000000600000007000000
-      leftConnections: 03000000
+      leftConnections: 030000000a000000
       rightConnections: 01000000080000000400000006000000
     - tileType: 0
       possibleSprites:
@@ -82,8 +82,8 @@ MonoBehaviour:
       - {fileID: -765015438, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
       - {fileID: 1458083476, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
       - {fileID: 1235364731, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      upConnections: 0200000000000000
-      downConnections: 0000000003000000
+      upConnections: 02000000000000000b000000
+      downConnections: 00000000030000000a000000
       leftConnections: 00000000040000000c000000
       rightConnections: 00000000050000000d000000
     - tileType: 3
@@ -94,8 +94,8 @@ MonoBehaviour:
       - {fileID: -928899216, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
       upConnections: 00000000
       downConnections: 01000000020000000600000007000000
-      leftConnections: 0800000003000000
-      rightConnections: 0900000003000000
+      leftConnections: 08000000030000000a000000
+      rightConnections: 09000000030000000a000000
     - tileType: 4
       possibleSprites:
       - {fileID: 1879172256, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
@@ -128,6 +128,20 @@ MonoBehaviour:
       - {fileID: -341442788, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
       upConnections: 0400000006000000
       downConnections: 0400000008000000
-      leftConnections: 00000000
-      rightConnections: 0d000000
-    gridSize: {x: 8, y: 8}
+      leftConnections: 0d000000
+      rightConnections: 00000000
+    - tileType: 11
+      possibleSprites:
+      - {fileID: -272024421, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      upConnections: 0a000000
+      downConnections: 00000000
+      leftConnections: 0200000006000000
+      rightConnections: 0200000007000000
+    - tileType: 10
+      possibleSprites:
+      - {fileID: 227167098, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      upConnections: 00000000
+      downConnections: 0b000000
+      leftConnections: 0300000006000000
+      rightConnections: 0300000009000000
+    gridSize: {x: 50, y: 50}

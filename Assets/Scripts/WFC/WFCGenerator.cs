@@ -2,262 +2,768 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Diagnostics;
 using Random = UnityEngine.Random;
 
-public class WFCGenerator : MonoBehaviour {
+public enum Direction
+{
+    Up,
+    Down,
+    Left,
+    Right
+}
+
+public class WFCGenerator : MonoBehaviour
+{
     public WFCData wfcData;
     public Transform spriteParent;
     public Vector3 offset;
     public bool autoRun = false;
+    public int seed = -1; // -1 means no specific seed.
 
-    [ContextMenu("Generate")]
-    public void Generate() {
-        if (spriteParent != null) {
-            foreach (Transform child in spriteParent) {
-                Destroy(child.gameObject);
-            }
+    private int _totalNodesExpanded;
+    private int _totalRetries;
+    private Stack<(WFCGridCell, List<Tile>)> _backtrackStack = new Stack<(WFCGridCell, List<Tile>)>();
+    private Stack<WFCGridCell[,]> _backtrackGridStateStack = new Stack<WFCGridCell[,]>();
+
+    private class WFCTestResult
+    {
+        public int Seed { get; set; }
+        public bool Success { get; set; }
+        public int NodesExpanded { get; set; }
+        public int Retries { get; set; }
+        public long ElapsedMilliseconds { get; set; }
+        public override string ToString()
+        {
+            return $"Seed: {Seed} Success: {Success}, Nodes: {NodesExpanded}, Retries: {Retries}, Time: {ElapsedMilliseconds} ms";
         }
-        StartGeneration();
     }
 
-    private void StartGeneration() {
-        Debug.Log("StartGeneration: Starting WFC process");
-        if (wfcData.wfcObject.tiles.Count == 0) {
-            Debug.LogError("StartGeneration: No tiles in wfcData!");
-            return;
+    [ContextMenu("Generate with Arc Consistency")]
+    public void GenerateWithArcConsistency()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCArcConsistency();
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            VisualizeMap();
+            UnityEngine.Debug.Log($"Map Generation Complete (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
         }
-        if (wfcData.wfcObject.gridSize.x == 0 || wfcData.wfcObject.gridSize.y == 0) {
-            Debug.LogError("StartGeneration: WFC Grid size cannot be zero");
-            return;
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Generate")]
+    public void Generate()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(false, false); // No cache, no forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            VisualizeMap();
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Generate With Cache")]
+    public void GenerateWithCache()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(true, false); // With cache, no forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            VisualizeMap();
+            UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Generate With Forward Checking")]
+    public void GenerateWithForwardChecking()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(false, true); // No cache, With forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            VisualizeMap();
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Generate With Cache and Forward Checking")]
+    public void GenerateWithCacheAndForwardChecking()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(true, true); // With cache and forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            VisualizeMap();
+            UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+
+    [ContextMenu("Test Performance")]
+    public void TestPerformance()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(false, false); // No cache, no forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Test Performance With Cache")]
+    public void TestPerformanceWithCache()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(true, false); // With cache, no forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Test Performance With Forward Checking")]
+    public void TestPerformanceWithForwardChecking()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(false, true); // No cache, With forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+    [ContextMenu("Test Performance With Cache and Forward Checking")]
+    public void TestPerformanceWithCacheAndForwardChecking()
+    {
+        ClearSprites();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool generationSuccess = WFCBasic(true, true); // With cache and forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+        if (generationSuccess)
+        {
+            UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+        }
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+    }
+
+
+    [ContextMenu("Test Performance All Seeds")]
+    public void TestPerformanceAllSeeds()
+    {
+        UnityEngine.Debug.Log("Starting performance tests for all WFC variants");
+        ClearSprites();
+        int numberOfSeeds = 5;
+
+        List<WFCTestResult> noCacheNoFCResults = new List<WFCTestResult>();
+        List<WFCTestResult> cacheNoFCResults = new List<WFCTestResult>();
+        List<WFCTestResult> noCacheFCResults = new List<WFCTestResult>();
+        List<WFCTestResult> cacheFCResults = new List<WFCTestResult>();
+
+        for (int i = 0; i < numberOfSeeds; i++)
+        {
+            int currentSeed = i + 1;
+            UnityEngine.Debug.Log($"\nSeed: {currentSeed}");
+            seed = currentSeed;
+
+            WFCTestResult noCacheNoFCResult = RunTest(false, false, currentSeed);
+            noCacheNoFCResults.Add(noCacheNoFCResult);
+
+            WFCTestResult cacheNoFCResult = RunTest(true, false, currentSeed);
+            cacheNoFCResults.Add(cacheNoFCResult);
+
+            WFCTestResult noCacheFCResult = RunTest(false, true, currentSeed);
+            noCacheFCResults.Add(noCacheFCResult);
+
+            WFCTestResult cacheFCResult = RunTest(true, true, currentSeed);
+            cacheFCResults.Add(cacheFCResult);
+        }
+        ReportResults("No Cache, No FC", noCacheNoFCResults);
+        ReportResults("Cache, No FC", cacheNoFCResults);
+        ReportResults("No Cache, FC", noCacheFCResults);
+        ReportResults("Cache, FC", cacheFCResults);
+    }
+
+    private WFCTestResult RunTest(bool useCache, bool useForwardChecking, int currentSeed)
+    {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool success = WFCBasic(useCache, useForwardChecking); // No cache, no forward checking
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        WFCTestResult testResult = new WFCTestResult
+        {
+            Seed = currentSeed,
+            Success = success,
+            NodesExpanded = _totalNodesExpanded,
+            Retries = _totalRetries,
+            ElapsedMilliseconds = elapsedMilliseconds
+        };
+        _totalNodesExpanded = 0;
+        _totalRetries = 0;
+
+        return testResult;
+    }
+
+    private void ReportResults(string wfcType, List<WFCTestResult> testResults)
+    {
+        UnityEngine.Debug.Log($"\n--- Results for: {wfcType} ---");
+        int totalSuccesses = testResults.Count(r => r.Success);
+        float successPercentage = (float)totalSuccesses / testResults.Count * 100f;
+        long totalNodesExpanded = 0;
+        long totalRetries = 0;
+        long totalElapsedMilliseconds = 0;
+
+        foreach (var result in testResults)
+        {
+            totalNodesExpanded += result.NodesExpanded;
+            totalRetries += result.Retries;
+            totalElapsedMilliseconds += result.ElapsedMilliseconds;
         }
 
-        int maxRetries = 50; // You can adjust this
-        int currentRetry = 0;
 
+        float averageNodesExpanded = (float)totalNodesExpanded / testResults.Count;
+        float averageRetries = (float)totalRetries / testResults.Count;
+        float averageElapsedMilliseconds = (float)totalElapsedMilliseconds / testResults.Count;
+
+
+        UnityEngine.Debug.Log($"Success Rate: {successPercentage:F2}%, Average Nodes Expanded: {averageNodesExpanded:F2}, Average Retries: {averageRetries:F2}, Average Time: {averageElapsedMilliseconds:F2} ms");
+    }
+
+    private void ClearSprites()
+    {
+        if (spriteParent == null) return;
+        // Use a for loop for safety while removing
+        for (int i = spriteParent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = spriteParent.GetChild(i);
+            if (child != null)
+            {
+                DestroyImmediate(child.gameObject); // Destroy immediately for editor
+            }
+        }
+    }
+
+
+    private bool WFCBasic(bool useCache, bool useForwardChecking)
+    {
+        UnityEngine.Debug.Log($"WFCBasic: Starting WFC process, Caching = {useCache}, Forward Checking = {useForwardChecking}");
+        if (wfcData.wfcObject.tiles.Count == 0)
+        {
+            UnityEngine.Debug.LogError("WFCBasic: No tiles in wfcData!");
+            return false;
+        }
+        if (wfcData.wfcObject.gridSize.x == 0 || wfcData.wfcObject.gridSize.y == 0)
+        {
+            UnityEngine.Debug.LogError("WFCBasic: WFC Grid size cannot be zero");
+            return false;
+        }
+
+        int maxRetries = 500;
         bool finished = false;
-        while (!finished && currentRetry < maxRetries) {
-            Debug.Log($"StartGeneration: Starting WFC process, Attempt: {currentRetry + 1}");
+
+        if (seed != -1)
+        {
+            Random.InitState(seed);
+        }
+
+        for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
+        {
+            _totalRetries++;
+            _backtrackStack.Clear(); // Clear the backtrack stack at the beginning of each retry
+            _backtrackGridStateStack.Clear(); // Clear the grid state stack at the beginning of each retry
+
             // Explicitly initialize the grid
             wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
 
-            while (!finished) {
-                Debug.Log("StartGeneration: Calling Collapse");
-                if (Collapse(out WFCGridCell cell)) {
-                    Debug.Log("StartGeneration: Collapse successful");
-                    Propagate(cell);
-                    if (CheckIfDone()) {
+            PrePopulateEdgesWithWater(useCache, useForwardChecking);
+
+            while (!finished)
+            {
+                if (Collapse(out WFCGridCell cell, useForwardChecking))
+                {
+                    _totalNodesExpanded++;
+                    Propagate(cell, useCache, useForwardChecking);
+
+                    if (CheckIfDone())
+                    {
                         finished = true;
                     }
-                } else {
-                    Debug.LogError($"StartGeneration: Cannot Collapse Map, retrying ({currentRetry + 1}/{maxRetries})");
-                    //ResetGrid(); dont need to reset anymore
-                    break;
+                    else if (HasContradiction())
+                    {
+                        // Backtrack if contradiction is found
+                        if (!Backtrack())
+                        {
+                            break; // If backtracking fails, break to the outer loop for retry
+                        }
+                    }
+                }
+                else
+                {
+                    break; // If cannot collapse, break out of inner loop, and retry
                 }
             }
-
-            if (!finished) {
-                currentRetry++;
+            if (finished)
+            {
+                UnityEngine.Debug.Log("WFCBasic: WFC process finished");
+                UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+                return true; // Exit the method if generation is successful
             }
-
         }
 
 
-        if (finished) {
-            VisualizeMap();
-            Debug.Log("StartGeneration: WFC process finished");
-        } else {
-            Debug.LogError("StartGeneration: WFC process failed after multiple retries");
-            // Optionally handle complete failure more explicitly
-        }
-
+        UnityEngine.Debug.LogError("WFCBasic: WFC process failed after multiple retries");
+        UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+        return false; // Return false if max retries are exhausted
     }
 
-    private bool CheckIfDone() {
-        Debug.Log("CheckIfDone: Checking if map is fully collapsed");
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
-            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
-                if (!wfcData.wfcObject.grid[x, y].collapsed) {
-                    Debug.Log($"CheckIfDone: Cell not collapsed at x:{x} y:{y}");
+
+    private bool HasContradiction()
+    {
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
+            {
+                if (!wfcData.wfcObject.grid[x, y].collapsed && wfcData.wfcObject.grid[x, y].possibleTiles.Count == 0)
+                {
+                    return true;
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+    private void PrePopulateEdgesWithWater(bool useCache, bool useForwardChecking)
+    {
+        // UnityEngine.Debug.Log("PrePopulateEdgesWithWater: Starting pre-population of edges with water");
+        // Find the water tile
+        Tile waterTile = wfcData.wfcObject.tiles.Find(tile => tile.tileType == TileType.Water);
+        if (waterTile.Equals(default(Tile)))
+        {
+            UnityEngine.Debug.LogError("PrePopulateEdgesWithWater: No Water tile found!");
+            return;
+        }
+
+        // Top row
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            SetCellToTile(x, wfcData.wfcObject.gridSize.y - 1, waterTile);
+            Propagate(wfcData.wfcObject.grid[x, wfcData.wfcObject.gridSize.y - 1], useCache, useForwardChecking); // we don't want forward checking at the edges
+        }
+
+        // Bottom row
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            SetCellToTile(x, 0, waterTile);
+            Propagate(wfcData.wfcObject.grid[x, 0], useCache, useForwardChecking);
+        }
+
+        // Left Column
+        for (int y = 1; y < wfcData.wfcObject.gridSize.y - 1; y++)
+        {
+            SetCellToTile(0, y, waterTile);
+            Propagate(wfcData.wfcObject.grid[0, y], useCache, useForwardChecking);
+        }
+
+        // Right Column
+        for (int y = 1; y < wfcData.wfcObject.gridSize.y - 1; y++)
+        {
+            SetCellToTile(wfcData.wfcObject.gridSize.x - 1, y, waterTile);
+            Propagate(wfcData.wfcObject.grid[wfcData.wfcObject.gridSize.x - 1, y], useCache, useForwardChecking);
+        }
+
+        // UnityEngine.Debug.Log("PrePopulateEdgesWithWater: Finished pre-population of edges with water");
+    }
+
+    private void SetCellToTile(int x, int y, Tile tile)
+    {
+        if (x < 0 || x >= wfcData.wfcObject.gridSize.x || y < 0 || y >= wfcData.wfcObject.gridSize.y)
+        {
+            UnityEngine.Debug.LogError($"SetCellToTile: Invalid cell coordinates x:{x}, y:{y}");
+            return;
+        }
+        WFCGridCell cell = wfcData.wfcObject.grid[x, y];
+        cell.possibleTiles = new List<Tile>() { tile };
+        cell.collapsed = true;
+        wfcData.wfcObject.grid[x, y] = cell;
+        UnityEngine.Debug.Log($"SetCellToTile: Set cell at x: {x}, y: {y} to tile {tile.tileType}");
+    }
+
+    private bool CheckIfDone()
+    {
+        // UnityEngine.Debug.Log("CheckIfDone: Checking if map is fully collapsed");
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
+            {
+                if (!wfcData.wfcObject.grid[x, y].collapsed)
+                {
+                    //  UnityEngine.Debug.Log($"CheckIfDone: Cell not collapsed at x:{x} y:{y}");
                     return false;
                 }
             }
         }
 
-        Debug.Log("CheckIfDone: Map is fully collapsed");
+        UnityEngine.Debug.Log("CheckIfDone: Map is fully collapsed");
         return true;
     }
 
-    private void ResetGrid() {
-        Debug.Log("ResetGrid: Resetting grid");
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
-            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
-                wfcData.wfcObject.grid[x, y].possibleTiles = new List<Tile>(wfcData.wfcObject.tiles);
-                wfcData.wfcObject.grid[x, y].collapsed = false;
-            }
-        }
-        Debug.Log("ResetGrid: Grid has been reset");
-    }
-
-    private bool Collapse(out WFCGridCell lowestEntropyCell) {
+    private bool Collapse(out WFCGridCell lowestEntropyCell, bool useForwardChecking)
+    {
         lowestEntropyCell = new WFCGridCell();
         List<WFCGridCell> possibleCells = new List<WFCGridCell>();
 
-        Debug.Log("Collapse: Starting collapse process");
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
-            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
+            {
                 WFCGridCell cell = wfcData.wfcObject.grid[x, y];
-                if (!cell.collapsed) {
+                if (!cell.collapsed)
+                {
                     possibleCells.Add(cell);
-                    Debug.Log($"Collapse: Adding cell to possible cells, x:{x} y:{y}, collapsed: {cell.collapsed}");
                 }
-
             }
         }
 
-        Debug.Log($"Collapse: possibleCells count = {possibleCells.Count}");
-
-        if (possibleCells.Count == 0) {
-            Debug.Log("Collapse: No possible cells, returning false");
+        if (possibleCells.Count == 0)
+        {
             return false;
         }
 
-        possibleCells = possibleCells.OrderBy(cell => cell.possibleTiles.Count).ToList();
-
-        if (possibleCells.Count == 0) {
-            Debug.Log("Collapse: No possible cells after ordering, returning false");
-            return false;
+        if (useForwardChecking)
+        {
+            possibleCells = possibleCells.OrderBy(cell => cell.possibleTiles.Count).ToList();
         }
+        else
+        {
+            possibleCells = possibleCells.OrderBy(cell => cell.possibleTiles.Count).ToList();
+        }
+
         lowestEntropyCell = possibleCells[0];
 
-        if (lowestEntropyCell.possibleTiles == null) {
-            Debug.LogError("Collapse: possibleTiles is null!");
+
+        if (lowestEntropyCell.possibleTiles == null)
+        {
+            UnityEngine.Debug.LogError("Collapse: possibleTiles is null!");
             return false;
         }
 
-        if (lowestEntropyCell.possibleTiles.Count == 0) {
-            Debug.Log("Collapse: Lowest entropy cell has no possible tiles. returning false");
+        if (lowestEntropyCell.possibleTiles.Count == 0)
+        {
             return false;
         }
 
+        Tile chosenTile;
+        if (lowestEntropyCell.possibleTiles.Count > 1)
+        {
+            int index = Random.Range(0, lowestEntropyCell.possibleTiles.Count);
+            chosenTile = lowestEntropyCell.possibleTiles[index];
+            _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
+            _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
+            lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
 
-        int index = Random.Range(0, lowestEntropyCell.possibleTiles.Count);
-        Tile chosenTile = lowestEntropyCell.possibleTiles[index];
-        lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
+        }
+        else
+        {
+            chosenTile = lowestEntropyCell.possibleTiles[0];
+            _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
+            _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
+            lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
+        }
+
+
+
         lowestEntropyCell.collapsed = true;
         wfcData.wfcObject.grid[lowestEntropyCell.x, lowestEntropyCell.y] = lowestEntropyCell;
-
-        Debug.Log($"Collapse: Collapsed cell at x: {lowestEntropyCell.x} y: {lowestEntropyCell.y}, with tile {chosenTile.tileType}");
         return true;
     }
 
-    private void Propagate(WFCGridCell collapsedCell) {
-        Debug.Log($"Propagate: Starting propagation for cell at x: {collapsedCell.x} y: {collapsedCell.y}");
+
+
+    private bool Backtrack()
+    {
+        if (_backtrackStack.Count == 0)
+        {
+            //If no more previous decisions, cannot backtrack.
+            return false;
+        }
+
+        (WFCGridCell prevCell, List<Tile> prevPossibleTiles) = _backtrackStack.Pop();
+        wfcData.wfcObject.grid = _backtrackGridStateStack.Pop(); //Reset Grid to previous state.
+
+        //Reset previous cell state
+        prevCell = wfcData.wfcObject.grid[prevCell.x, prevCell.y];
+        prevCell.collapsed = false;
+        prevCell.possibleTiles = prevPossibleTiles;
+        wfcData.wfcObject.grid[prevCell.x, prevCell.y] = prevCell;
+
+        // If there is more than one possibility in the cell.
+        if (prevPossibleTiles.Count > 1)
+        {
+            // Remove the last tile that was tried from possible tiles, and add it back into the previous stack.
+            Tile lastTriedTile = prevCell.possibleTiles[0];
+            prevCell.possibleTiles.Remove(lastTriedTile);
+
+            _backtrackStack.Push((prevCell, new List<Tile>(prevCell.possibleTiles)));
+            _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
+
+            // Try a different one next time.
+            return true;
+        }
+        //If no more tiles in this cell, backtrack further
+        return Backtrack();
+    }
+
+    private WFCGridCell[,] CopyGrid(WFCGridCell[,] sourceGrid)
+    {
+        int width = sourceGrid.GetLength(0);
+        int height = sourceGrid.GetLength(1);
+        WFCGridCell[,] newGrid = new WFCGridCell[width, height];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                newGrid[x, y] = new WFCGridCell(sourceGrid[x, y].x, sourceGrid[x, y].y)
+                {
+                    collapsed = sourceGrid[x, y].collapsed,
+                    possibleTiles = new List<Tile>(sourceGrid[x, y].possibleTiles)
+
+                };
+            }
+        }
+        return newGrid;
+    }
+
+
+    private void Propagate(WFCGridCell collapsedCell, bool useCache, bool useForwardChecking)
+    {
+        // UnityEngine.Debug.Log($"Propagate: Starting propagation for cell at x: {collapsedCell.x} y: {collapsedCell.y}");
         int x = collapsedCell.x;
         int y = collapsedCell.y;
         Tile collapsedTile = collapsedCell.possibleTiles[0];
-        Debug.Log($"Propagate: Collapsed tile is {collapsedTile.tileType}");
+        // UnityEngine.Debug.Log($"Propagate: Collapsed tile is {collapsedTile.tileType}");
 
-        PropagateToCell(x, y + 1, collapsedTile, "up");
-        PropagateToCell(x, y - 1, collapsedTile, "down");
-        PropagateToCell(x - 1, y, collapsedTile, "left");
-        PropagateToCell(x + 1, y, collapsedTile, "right");
-        Debug.Log("Propagate: Finished propagation");
+        PropagateToCell(x, y + 1, collapsedTile, Direction.Up, useCache, useForwardChecking);
+        PropagateToCell(x, y - 1, collapsedTile, Direction.Down, useCache, useForwardChecking);
+        PropagateToCell(x - 1, y, collapsedTile, Direction.Left, useCache, useForwardChecking);
+        PropagateToCell(x + 1, y, collapsedTile, Direction.Right, useCache, useForwardChecking);
+        // UnityEngine.Debug.Log("Propagate: Finished propagation");
     }
+    private Dictionary<(Direction, TileType), List<Tile>> _propagationCache = new Dictionary<(Direction, TileType), List<Tile>>();
 
-    private void PropagateToCell(int x, int y, Tile collapsedTile, string direction) {
-        Debug.Log($"PropagateToCell: Starting propagate to x:{x} y:{y} from tile: {collapsedTile.tileType}, direction: {direction}");
-        if (x < 0 || x >= wfcData.wfcObject.gridSize.x) {
-            Debug.Log($"PropagateToCell: Invalid x:{x}, skipping");
+    private void PropagateToCell(int x, int y, Tile collapsedTile, Direction direction, bool useCache, bool useForwardChecking)
+    {
+        // UnityEngine.Debug.Log($"PropagateToCell: Starting propagate to x:{x} y:{y} from tile: {collapsedTile.tileType}, direction: {direction}");
+        if (x < 0 || x >= wfcData.wfcObject.gridSize.x)
+        {
+            // UnityEngine.Debug.Log($"PropagateToCell: Invalid x:{x}, skipping");
             return;
         }
 
-        if (y < 0 || y >= wfcData.wfcObject.gridSize.y) {
-            Debug.Log($"PropagateToCell: Invalid y:{y}, skipping");
+        if (y < 0 || y >= wfcData.wfcObject.gridSize.y)
+        {
+            // UnityEngine.Debug.Log($"PropagateToCell: Invalid y:{y}, skipping");
             return;
         }
 
         WFCGridCell cell = wfcData.wfcObject.grid[x, y];
 
-        if (cell.collapsed) {
-            Debug.Log($"PropagateToCell: Cell x:{x} y:{y} already collapsed, skipping");
+        if (cell.collapsed)
+        {
+            // UnityEngine.Debug.Log($"PropagateToCell: Cell x:{x} y:{y} already collapsed, skipping");
             return;
         }
+        //  UnityEngine.Debug.Log($"PropagateToCell: Before filtering possible tiles: {string.Join(", ", cell.possibleTiles.Select(tile => tile.tileType))} for cell at x:{x}, y:{y}");
 
-        Debug.Log($"PropagateToCell: Before filtering possible tiles: {string.Join(", ", cell.possibleTiles.Select(tile => tile.tileType))} for cell at x:{x}, y:{y}");
+        HashSet<TileType> validConnections = new HashSet<TileType>();
+        if (useCache)
+        {
+            var cacheKey = (direction, collapsedTile.tileType);
 
-        List<Tile> validTiles = new List<Tile>();
+            if (_propagationCache.TryGetValue(cacheKey, out List<Tile> cachedTiles))
+            {
+                validConnections.UnionWith(cachedTiles.Select(tile => tile.tileType));
+                //UnityEngine.Debug.Log($"PropagateToCell: Using cached valid connections for cell at x:{x}, y:{y}, tiles: {string.Join(", ", validConnections)}");
+            }
+            else
+            {
 
-
-
-        switch (direction) {
-            case "up":
-                foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.upConnections != null && collapsedTile.upConnections.Contains(tile.tileType)) {
-                        validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid up connection");
-                    } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid up connection");
-                    }
+                switch (direction)
+                {
+                    case Direction.Up:
+                        if (collapsedTile.upConnections != null)
+                        {
+                            validConnections.UnionWith(collapsedTile.upConnections);
+                        }
+                        break;
+                    case Direction.Down:
+                        if (collapsedTile.downConnections != null)
+                        {
+                            validConnections.UnionWith(collapsedTile.downConnections);
+                        }
+                        break;
+                    case Direction.Left:
+                        if (collapsedTile.leftConnections != null)
+                        {
+                            validConnections.UnionWith(collapsedTile.leftConnections);
+                        }
+                        break;
+                    case Direction.Right:
+                        if (collapsedTile.rightConnections != null)
+                        {
+                            validConnections.UnionWith(collapsedTile.rightConnections);
+                        }
+                        break;
                 }
-                break;
-            case "down":
-                foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.downConnections != null && collapsedTile.downConnections.Contains(tile.tileType)) {
-                        validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid down connection");
-                    } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid down connection");
+                _propagationCache[cacheKey] = validConnections.Select(connection => wfcData.wfcObject.tiles.Find(t => t.tileType == connection)).ToList();
+                //UnityEngine.Debug.Log($"PropagateToCell: Adding valid connections to cache x:{x}, y:{y}, tiles {string.Join(", ", validConnections)}");
+            }
+
+        }
+        else
+        {
+            switch (direction)
+            {
+                case Direction.Up:
+                    if (collapsedTile.upConnections != null)
+                    {
+                        validConnections.UnionWith(collapsedTile.upConnections);
                     }
-                }
-                break;
-            case "left":
-                foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.leftConnections != null && collapsedTile.leftConnections.Contains(tile.tileType)) {
-                        validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid left connection");
-                    } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid left connection");
+                    break;
+                case Direction.Down:
+                    if (collapsedTile.downConnections != null)
+                    {
+                        validConnections.UnionWith(collapsedTile.downConnections);
                     }
-                }
-                break;
-            case "right":
-                foreach (Tile tile in cell.possibleTiles) {
-                    if (collapsedTile.rightConnections != null && collapsedTile.rightConnections.Contains(tile.tileType)) {
-                        validTiles.Add(tile);
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is valid right connection");
-                    } else {
-                        Debug.Log($"PropagateToCell: Tile {tile.tileType} is not valid right connection");
+                    break;
+                case Direction.Left:
+                    if (collapsedTile.leftConnections != null)
+                    {
+                        validConnections.UnionWith(collapsedTile.leftConnections);
                     }
-                }
-                break;
+                    break;
+                case Direction.Right:
+                    if (collapsedTile.rightConnections != null)
+                    {
+                        validConnections.UnionWith(collapsedTile.rightConnections);
+                    }
+                    break;
+            }
         }
 
-
-        cell.possibleTiles = validTiles;
-
-        Debug.Log($"PropagateToCell: After filtering possible tiles: {string.Join(", ", cell.possibleTiles.Select(tile => tile.tileType))} for cell at x:{x}, y:{y}");
-
+        cell.possibleTiles.RemoveAll(tile => !validConnections.Contains(tile.tileType));
         wfcData.wfcObject.grid[x, y] = cell;
-
-        Debug.Log($"PropagateToCell: finished propagate to x:{x} y:{y}");
     }
 
-    private void VisualizeMap() {
-        Debug.Log("VisualizeMap: Starting map visualization");
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
-            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
+    private void VisualizeMap()
+    {
+        // UnityEngine.Debug.Log("VisualizeMap: Starting map visualization");
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+        {
+            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
+            {
                 var cell = wfcData.wfcObject.grid[x, y];
-                if (cell.possibleTiles == null || cell.possibleTiles.Count == 0) {
-                    Debug.LogError($"VisualizeMap: No valid tiles in cell at x:{x} y:{y}, skipping");
+                if (cell.possibleTiles == null || cell.possibleTiles.Count == 0)
+                {
+                    UnityEngine.Debug.LogError($"VisualizeMap: No valid tiles in cell at x:{x} y:{y}, skipping");
                     continue; // Skip if no tile could be placed
                 }
 
                 var tile = cell.possibleTiles[0];
-                if (tile.possibleSprites != null && tile.possibleSprites.Count > 0) {
+                if (tile.possibleSprites != null && tile.possibleSprites.Count > 0)
+                {
                     int randomIndex = Random.Range(0, tile.possibleSprites.Count);
                     Sprite chosenSprite = tile.possibleSprites[randomIndex];
 
-                    Debug.Log($"VisualizeMap: instantiating sprite: {chosenSprite}, at x: {x}, y: {y}");
+                    // UnityEngine.Debug.Log($"VisualizeMap: instantiating sprite: {chosenSprite}, at x: {x}, y: {y}");
                     GameObject spriteObject = new GameObject(tile.tileType.ToString());
                     SpriteRenderer renderer = spriteObject.AddComponent<SpriteRenderer>();
                     renderer.sprite = chosenSprite;
@@ -269,13 +775,210 @@ public class WFCGenerator : MonoBehaviour {
 
                     spriteObject.transform.position = new Vector3(x, y, 0) + offset + this.offset;
                     spriteObject.transform.SetParent(spriteParent, true);
-                } else {
-                    Debug.LogError($"VisualizeMap: No valid sprites in cell at x:{x} y:{y}, skipping");
                 }
-
-
+                else
+                {
+                    UnityEngine.Debug.LogError($"VisualizeMap: No valid sprites in cell at x:{x} y:{y}, skipping");
+                }
             }
         }
-        Debug.Log("VisualizeMap: Finished map visualization");
+        // UnityEngine.Debug.Log("VisualizeMap: Finished map visualization");
+    }
+    private bool WFCArcConsistency()
+    {
+        UnityEngine.Debug.Log($"WFCArcConsistency: Starting WFC process with Arc Consistency");
+        if (wfcData.wfcObject.tiles.Count == 0)
+        {
+            UnityEngine.Debug.LogError("WFCArcConsistency: No tiles in wfcData!");
+            return false;
+        }
+        if (wfcData.wfcObject.gridSize.x == 0 || wfcData.wfcObject.gridSize.y == 0)
+        {
+            UnityEngine.Debug.LogError("WFCArcConsistency: WFC Grid size cannot be zero");
+            return false;
+        }
+
+        int maxRetries = 500;
+        bool finished = false;
+        if (seed != -1)
+        {
+            Random.InitState(seed);
+        }
+
+        for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
+        {
+            _totalRetries++;
+            _backtrackStack.Clear();
+            _backtrackGridStateStack.Clear(); // Clear the grid state stack at the beginning of each retry
+            wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
+
+            PrePopulateEdgesWithWater(false, false);
+
+
+            if (!EstablishArcConsistency())
+            {
+                if (!Backtrack())
+                {
+                    continue;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+
+            while (!finished)
+            {
+                if (Collapse(out WFCGridCell cell, false))
+                {
+                    _totalNodesExpanded++;
+
+                    if (!EstablishArcConsistency())
+                    {
+                        // Backtrack if contradiction is found
+                        if (!Backtrack())
+                        {
+                            break; // If backtracking fails, break to the outer loop for retry
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (CheckIfDone())
+                    {
+                        finished = true;
+                    }
+                    else if (HasContradiction())
+                    {
+                        if (!Backtrack())
+                        {
+                            break; // If backtracking fails, break to the outer loop for retry
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (finished)
+            {
+                UnityEngine.Debug.Log("WFCArcConsistency: WFC process finished");
+                UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+                return true;
+            }
+
+        }
+        UnityEngine.Debug.LogError("WFCArcConsistency: WFC process failed after multiple retries");
+        UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+        return false;
+
+    }
+    private bool EstablishArcConsistency()
+    {
+        bool changed = true;
+        while (changed)
+        {
+            changed = false;
+            for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
+            {
+                for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
+                {
+                    WFCGridCell currentCell = wfcData.wfcObject.grid[x, y];
+                    if (currentCell.collapsed) continue; // Skip collapsed cells
+
+                    // Check and reduce domains of neighbors
+                    if (ReduceDomain(x, y + 1, currentCell, Direction.Up)) changed = true;
+                    if (ReduceDomain(x, y - 1, currentCell, Direction.Down)) changed = true;
+                    if (ReduceDomain(x - 1, y, currentCell, Direction.Left)) changed = true;
+                    if (ReduceDomain(x + 1, y, currentCell, Direction.Right)) changed = true;
+                }
+            }
+            if (HasContradiction()) return false;
+        }
+        return true; // returns true when no more constraints can be removed.
+    }
+
+    private bool ReduceDomain(int neighborX, int neighborY, WFCGridCell currentCell, Direction direction)
+    {
+        if (neighborX < 0 || neighborX >= wfcData.wfcObject.gridSize.x ||
+            neighborY < 0 || neighborY >= wfcData.wfcObject.gridSize.y)
+        {
+            return false; // Neighbor is out of bounds
+        }
+
+        WFCGridCell neighborCell = wfcData.wfcObject.grid[neighborX, neighborY];
+        if (neighborCell.collapsed) return false;
+
+
+        List<Tile> validTilesForNeighbor = new List<Tile>();
+
+        foreach (var neighborTile in neighborCell.possibleTiles)
+        {
+            bool isValid = false;
+            foreach (var currentTile in currentCell.possibleTiles)
+            {
+                if (HasValidConnection(currentTile, neighborTile, direction))
+                {
+                    isValid = true;
+                    break;
+                }
+            }
+            if (isValid)
+            {
+                validTilesForNeighbor.Add(neighborTile);
+            }
+
+        }
+
+        var originalCount = neighborCell.possibleTiles.Count;
+        neighborCell.possibleTiles = validTilesForNeighbor;
+        wfcData.wfcObject.grid[neighborX, neighborY] = neighborCell;
+
+        return neighborCell.possibleTiles.Count < originalCount;
+    }
+
+    private bool HasValidConnection(Tile currentTile, Tile neighborTile, Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.Up:
+                if (currentTile.upConnections != null && currentTile.upConnections.Contains(neighborTile.tileType)
+                && neighborTile.downConnections != null && neighborTile.downConnections.Contains(currentTile.tileType))
+                {
+                    return true;
+                }
+                break;
+            case Direction.Down:
+                if (currentTile.downConnections != null && currentTile.downConnections.Contains(neighborTile.tileType)
+                    && neighborTile.upConnections != null && neighborTile.upConnections.Contains(currentTile.tileType))
+                {
+                    return true;
+                }
+                break;
+            case Direction.Left:
+                if (currentTile.leftConnections != null && currentTile.leftConnections.Contains(neighborTile.tileType)
+                  && neighborTile.rightConnections != null && neighborTile.rightConnections.Contains(currentTile.tileType))
+                {
+                    return true;
+                }
+                break;
+            case Direction.Right:
+                if (currentTile.rightConnections != null && currentTile.rightConnections.Contains(neighborTile.tileType)
+                   && neighborTile.leftConnections != null && neighborTile.leftConnections.Contains(currentTile.tileType))
+                {
+                    return true;
+                }
+                break;
+        }
+        return false;
     }
 }
