@@ -15,133 +15,120 @@ MonoBehaviour:
   wfcObject:
     tiles:
     - tileType: 1
-      possibleSprites:
-      - {fileID: -1490083037, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1218124001, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 226635589, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 1701519700, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 1322091929, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1458722783, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 685554142958522814, guid: 49e4860f692539c4681b01f49612d33b, type: 3}
+      - {fileID: 599260152623085821, guid: fb3c072b95863e74880ed8973b088463, type: 3}
+      - {fileID: 55164814031940824, guid: bbd64787556140e49a39cea99a4daabe, type: 3}
+      - {fileID: 7206135706132332059, guid: 5cd5eabebf80f7e449b59b5d7dd090c9, type: 3}
+      - {fileID: 3529611202074309990, guid: aa37f6818887f274590ea0ab4ae04854, type: 3}
       upConnections: 03000000080000000900000001000000
       downConnections: 02000000060000000700000001000000
       leftConnections: 05000000070000000900000001000000
       rightConnections: 04000000060000000800000001000000
     - tileType: 2
-      possibleSprites:
-      - {fileID: -1119054038, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
-      - {fileID: 2016714419, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
-      - {fileID: -1668445654, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
-      - {fileID: -1645061268, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 2695604861868970685, guid: 9c564bf33a1cd2249960801821525797, type: 3}
+      - {fileID: 3867449886310747344, guid: 020a2c8c51b11e44fb3a7c160c03892f, type: 3}
+      - {fileID: 832753901675445489, guid: f0a95fb79545ee341a3d130d8713d535, type: 3}
+      - {fileID: 2282317434351267688, guid: c469f9762f996a748b4b9c5fd3fe3462, type: 3}
       upConnections: 01000000030000000800000009000000
       downConnections: 00000000
       leftConnections: 02000000060000000b000000
       rightConnections: 02000000070000000b000000
     - tileType: 6
-      possibleSprites:
-      - {fileID: -162095184, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 117028209680302691, guid: acd0bad47e669e44d80064e34623bea6, type: 3}
       upConnections: 01000000080000000300000009000000
       downConnections: 040000000c000000
       leftConnections: 01000000070000000500000009000000
       rightConnections: 020000000b000000
     - tileType: 7
-      possibleSprites:
-      - {fileID: -1100118827, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 1638229549231338348, guid: dae167d40a8677a40bd6c16466c0706a, type: 3}
       upConnections: 01000000080000000300000009000000
       downConnections: 050000000d000000
       leftConnections: 020000000b000000
       rightConnections: 01000000060000000400000008000000
     - tileType: 8
-      possibleSprites:
-      - {fileID: 1448689974, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 8157266275262604813, guid: 547d6aae59953ce4b8cb2945506eedf8, type: 3}
       upConnections: 040000000c000000
       downConnections: 01000000020000000600000007000000
       leftConnections: 01000000090000000700000005000000
       rightConnections: 030000000a000000
     - tileType: 9
-      possibleSprites:
-      - {fileID: 336533385, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 7428708772942987444, guid: 7422073bf048581418dcbff5bda2cd6c, type: 3}
       upConnections: 050000000d000000
       downConnections: 01000000020000000600000007000000
       leftConnections: 030000000a000000
       rightConnections: 01000000080000000400000006000000
     - tileType: 0
-      possibleSprites:
-      - {fileID: 1104807552, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1482032671, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 557124267, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -226388571, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1468721126, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1500756961, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -705574120, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 857265706, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1129609712, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1088015723, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 1376453339, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -416404228, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1010274999, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -765015438, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 1458083476, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 1235364731, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 1063151449478951065, guid: 1ea9e90f85967c64a9f9555487cdc050, type: 3}
+      - {fileID: 4080426997840008696, guid: ce24ee77dca099d429709f5975c01198, type: 3}
+      - {fileID: 957033025984552150, guid: a4dc2c8fab7673c41a51a22a5a37b0fc, type: 3}
+      - {fileID: 6245635267594625799, guid: ec15a207810dddc41a673faaade3fe5d, type: 3}
+      - {fileID: 5701793218642332380, guid: 5fd2f4b3a8e1c02469f4d541b77b3edd, type: 3}
+      - {fileID: 4768852871115227279, guid: 6e63a1ee0ff3acc48ad3b48ae467ccfc, type: 3}
+      - {fileID: 5258174203528223290, guid: 23e4f59436d81934b97ad944a9d6a3be, type: 3}
+      - {fileID: 6547374452360543259, guid: c1b232302a8bf254e8e1270da8281936, type: 3}
+      - {fileID: 7840375088520400112, guid: a2c48291946d97240843ebe82fff2735, type: 3}
+      - {fileID: 3110412132038909083, guid: 8ec7b5936e29c084ea2cf65fb9009caa, type: 3}
       upConnections: 02000000000000000b000000
       downConnections: 00000000030000000a000000
       leftConnections: 00000000040000000c000000
       rightConnections: 00000000050000000d000000
     - tileType: 3
-      possibleSprites:
-      - {fileID: -895445454, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 709468901, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 767300811, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -928899216, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 7433817052840603738, guid: 6fe8782c9000d1b499988519406b7e4b, type: 3}
+      - {fileID: 6652480156621738163, guid: 9bedc78de7251954d8d7073968f8f507, type: 3}
       upConnections: 00000000
       downConnections: 01000000020000000600000007000000
       leftConnections: 08000000030000000a000000
       rightConnections: 09000000030000000a000000
     - tileType: 4
-      possibleSprites:
-      - {fileID: 1879172256, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1478263819, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: 565055439, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1683074571, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 7963520051545734236, guid: d6d4bd5abcf3d9948a7b16a981bf38bf, type: 3}
+      - {fileID: 7963520051545734236, guid: c2f7eb1ce6f38414e9de7a3925d56846, type: 3}
       upConnections: 04000000060000000c000000
       downConnections: 04000000080000000c000000
       leftConnections: 01000000050000000700000009000000
       rightConnections: 00000000
     - tileType: 5
-      possibleSprites:
-      - {fileID: 1710798020, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -762187296, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -908060504, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
-      - {fileID: -1714564181, guid: 82892c677e7309e46bae1bae2527ed15, type: 3}
+      possiblePrefabs:
+      - {fileID: 418057692910898761, guid: d7d4e5f8c5301684687dade13d31fd57, type: 3}
+      - {fileID: 8582260084899719986, guid: 7ae2851460038ed4da5f5896a8729eb5, type: 3}
       upConnections: 05000000070000000d000000
       downConnections: 05000000090000000d000000
       leftConnections: 00000000
       rightConnections: 01000000080000000600000004000000
     - tileType: 13
-      possibleSprites:
-      - {fileID: -296826617, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 1400477984643256596, guid: e8e07104f5a587346895fe0114dd7855, type: 3}
       upConnections: 0500000007000000
       downConnections: 0500000009000000
       leftConnections: 00000000
       rightConnections: 0c000000
     - tileType: 12
-      possibleSprites:
-      - {fileID: -341442788, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 5861458016149767176, guid: 2cd566208a136594bae8fa1da71937d3, type: 3}
       upConnections: 0400000006000000
       downConnections: 0400000008000000
       leftConnections: 0d000000
       rightConnections: 00000000
     - tileType: 11
-      possibleSprites:
-      - {fileID: -272024421, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 2944370798763731894, guid: 8131bbafa998d1240985f1f1bddd5d53, type: 3}
       upConnections: 0a000000
       downConnections: 00000000
       leftConnections: 0200000006000000
       rightConnections: 0200000007000000
     - tileType: 10
-      possibleSprites:
-      - {fileID: 227167098, guid: 93e58bbd0d30b4644b852f1a89bb6ea3, type: 3}
+      possiblePrefabs:
+      - {fileID: 1627287172948680982, guid: 4f1f53a984b9b9b42a52fdde7ecd5d8d, type: 3}
       upConnections: 00000000
       downConnections: 0b000000
       leftConnections: 0300000006000000
       rightConnections: 0300000009000000
-    gridSize: {x: 52, y: 52}
+    gridSize: {x: 30, y: 30}
