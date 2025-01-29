@@ -26,6 +26,8 @@ public class WFCGenerator : MonoBehaviour
     private Stack<(WFCGridCell, List<Tile>)> _backtrackStack = new Stack<(WFCGridCell, List<Tile>)>();
     private Stack<WFCGridCell[,]> _backtrackGridStateStack = new Stack<WFCGridCell[,]>();
 
+    [SerializeField] private int _waterLayers = 1; // Serialized field for number of water layers
+
     private class WFCTestResult
     {
         public int Seed { get; set; }
@@ -421,48 +423,61 @@ public class WFCGenerator : MonoBehaviour
         return false;
     }
 
-    private void PrePopulateEdgesWithWater(bool useCache, bool useForwardChecking)
-    {
-        // UnityEngine.Debug.Log("PrePopulateEdgesWithWater: Starting pre-population of edges with water");
+    private void PrePopulateEdgesWithWater(bool useCache, bool useForwardChecking) {
+        //UnityEngine.Debug.Log($"PrePopulateEdgesWithWater: Starting pre-population of edges with {_waterLayers} water layers");
         // Find the water tile
         Tile waterTile = wfcData.wfcObject.tiles.Find(tile => tile.tileType == TileType.Water);
-        if (waterTile.Equals(default(Tile)))
-        {
+        if (waterTile.Equals(default(Tile))) {
             UnityEngine.Debug.LogError("PrePopulateEdgesWithWater: No Water tile found!");
             return;
         }
 
-        // Top row
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
-        {
-            SetCellToTile(x, wfcData.wfcObject.gridSize.y - 1, waterTile);
-            Propagate(wfcData.wfcObject.grid[x, wfcData.wfcObject.gridSize.y - 1], useCache, useForwardChecking); // we don't want forward checking at the edges
+
+        for (int layer = 0; layer < _waterLayers; layer++) {
+            // Top row
+            for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
+                if (yIsWithinLayer(wfcData.wfcObject.gridSize.y - 1 - layer, wfcData.wfcObject.gridSize.y)) {
+                    SetCellToTile(x, wfcData.wfcObject.gridSize.y - 1 - layer, waterTile);
+                    Propagate(wfcData.wfcObject.grid[x, wfcData.wfcObject.gridSize.y - 1 - layer], useCache, useForwardChecking);
+                }
+            }
+
+            // Bottom row
+            for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
+                if (yIsWithinLayer(layer, wfcData.wfcObject.gridSize.y)) {
+                    SetCellToTile(x, layer, waterTile);
+                    Propagate(wfcData.wfcObject.grid[x, layer], useCache, useForwardChecking);
+                }
+            }
+
+            // Left Column
+            for (int y = 1 + layer; y < wfcData.wfcObject.gridSize.y - 1 - layer; y++) {
+                if (xIsWithinLayer(layer, wfcData.wfcObject.gridSize.x)) {
+                    SetCellToTile(layer, y, waterTile);
+                    Propagate(wfcData.wfcObject.grid[layer, y], useCache, useForwardChecking);
+                }
+            }
+
+
+            // Right Column
+            for (int y = 1 + layer; y < wfcData.wfcObject.gridSize.y - 1 - layer; y++) {
+                if (xIsWithinLayer(wfcData.wfcObject.gridSize.x - 1 - layer, wfcData.wfcObject.gridSize.x)) {
+                    SetCellToTile(wfcData.wfcObject.gridSize.x - 1 - layer, y, waterTile);
+                    Propagate(wfcData.wfcObject.grid[wfcData.wfcObject.gridSize.x - 1 - layer, y], useCache, useForwardChecking);
+                }
+            }
         }
 
-        // Bottom row
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
-        {
-            SetCellToTile(x, 0, waterTile);
-            Propagate(wfcData.wfcObject.grid[x, 0], useCache, useForwardChecking);
-        }
-
-        // Left Column
-        for (int y = 1; y < wfcData.wfcObject.gridSize.y - 1; y++)
-        {
-            SetCellToTile(0, y, waterTile);
-            Propagate(wfcData.wfcObject.grid[0, y], useCache, useForwardChecking);
-        }
-
-        // Right Column
-        for (int y = 1; y < wfcData.wfcObject.gridSize.y - 1; y++)
-        {
-            SetCellToTile(wfcData.wfcObject.gridSize.x - 1, y, waterTile);
-            Propagate(wfcData.wfcObject.grid[wfcData.wfcObject.gridSize.x - 1, y], useCache, useForwardChecking);
-        }
-
-        // UnityEngine.Debug.Log("PrePopulateEdgesWithWater: Finished pre-population of edges with water");
+        //  UnityEngine.Debug.Log("PrePopulateEdgesWithWater: Finished pre-population of edges with water");
     }
 
+    private bool xIsWithinLayer(int x, int gridWidth) {
+        return x >= 0 && x < gridWidth;
+    }
+
+    private bool yIsWithinLayer(int y, int gridHeight) {
+        return y >= 0 && y < gridHeight;
+    }
     private void SetCellToTile(int x, int y, Tile tile)
     {
         if (x < 0 || x >= wfcData.wfcObject.gridSize.x || y < 0 || y >= wfcData.wfcObject.gridSize.y)
