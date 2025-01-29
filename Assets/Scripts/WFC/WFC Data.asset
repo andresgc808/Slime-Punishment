@@ -75,6 +75,12 @@ MonoBehaviour:
       - {fileID: 6547374452360543259, guid: c1b232302a8bf254e8e1270da8281936, type: 3}
       - {fileID: 7840375088520400112, guid: a2c48291946d97240843ebe82fff2735, type: 3}
       - {fileID: 3110412132038909083, guid: 8ec7b5936e29c084ea2cf65fb9009caa, type: 3}
+      - {fileID: 4581361213153704163, guid: db454631458f23e4d8266c11582dde23, type: 3}
+      - {fileID: 4927513218779790221, guid: 9dabd0396f1216a44853c97ab923cac6, type: 3}
+      - {fileID: 2285593230359086821, guid: e93faa6bcdd38f34e9bfcc5065f62ced, type: 3}
+      - {fileID: 1253131714415759127, guid: e1670b4d509cdcf4caa4ba1a4fcfc4fd, type: 3}
+      - {fileID: 4218893285802365054, guid: ce21324d3775e8f4cbe5d07a33b885bd, type: 3}
+      - {fileID: 6845671420864980454, guid: 0cdca2886ee3cfb41bdc82f62c07adbb, type: 3}
       upConnections: 02000000000000000b000000
       downConnections: 00000000030000000a000000
       leftConnections: 00000000040000000c000000
