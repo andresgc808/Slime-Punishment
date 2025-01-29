@@ -6,8 +6,8 @@ public class TPMiniBoss : MonoBehaviour {
     [SerializeField] private Transform target;
     [SerializeField] private List<Transform> teleportPositions;
     [SerializeField] private Transform playerPosition;
-    [SerializeField] private float minPlayerCirclingDistance = 2f;
-    [SerializeField] private float maxPlayerCirclingDistance = 4f;
+    [SerializeField] private float minPlayerCirclingDistance = 3.5f;
+    [SerializeField] private float maxPlayerCirclingDistance = 7f;
     [SerializeField] private float _moveSpeed = 2f;
     [SerializeField] private float agroRange = 5f;
 
@@ -112,6 +112,9 @@ public class TPMiniBoss : MonoBehaviour {
     }
 
     private IEnumerator TeleportAttackCoroutine() {
+        _rb.velocity = Vector2.zero;
+
+
         int teleportCount = 3;
 
         for (int i = 0; i < teleportCount; i++) {
