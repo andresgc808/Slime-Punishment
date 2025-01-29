@@ -27,99 +27,81 @@ public class WFCObject {
     }
 
 
-     public override string ToString()
-    {
+    public override string ToString() {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine($"Grid Size: {gridSize.x} x {gridSize.y}");
         sb.AppendLine("--- Tiles ---");
-        foreach (var tile in tiles)
-        {
+        foreach (var tile in tiles) {
             sb.AppendLine(TileToString(tile));
         }
         sb.AppendLine("--- Grid ---");
 
-          if (grid != null)
-            {
-              for (int y = gridSize.y - 1; y >= 0; y--)
-                {
-                    for (int x = 0; x < gridSize.x; x++)
-                    {
-                         sb.Append(GridCellToString(grid[x,y]));
-                         sb.Append(" ");
-                    }
-                    sb.AppendLine();
+        if (grid != null) {
+            for (int y = gridSize.y - 1; y >= 0; y--) {
+                for (int x = 0; x < gridSize.x; x++) {
+                    sb.Append(GridCellToString(grid[x, y]));
+                    sb.Append(" ");
                 }
-           } else {
-               sb.AppendLine("Grid is null");
-           }
+                sb.AppendLine();
+            }
+        } else {
+            sb.AppendLine("Grid is null");
+        }
 
         return sb.ToString();
     }
 
 
-    private string TileToString(Tile tile)
-    {
+    private string TileToString(Tile tile) {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine($"  - {tile.tileType}:");
-        sb.Append("    Sprites: ");
-        if (tile.possibleSprites != null) {
-          sb.Append(string.Join(", ", tile.possibleSprites.Select(s => s.name)));
+        sb.Append("    Prefabs: ");
+        if (tile.possiblePrefabs != null) {
+            sb.Append(string.Join(", ", tile.possiblePrefabs.Select(s => s.name)));
         } else {
-          sb.Append("None");
+            sb.Append("None");
         }
         sb.AppendLine();
         sb.Append("    Up Connections: ");
-        if (tile.upConnections != null)
-        {
+        if (tile.upConnections != null) {
             sb.Append(string.Join(", ", tile.upConnections));
-        }
-        else
-        {
+        } else {
             sb.Append("None");
         }
-         sb.AppendLine();
+        sb.AppendLine();
         sb.Append("    Down Connections: ");
-         if (tile.downConnections != null)
-        {
+        if (tile.downConnections != null) {
             sb.Append(string.Join(", ", tile.downConnections));
-        }
-        else
-        {
+        } else {
             sb.Append("None");
         }
-         sb.AppendLine();
+        sb.AppendLine();
         sb.Append("    Left Connections: ");
-         if (tile.leftConnections != null)
-        {
+        if (tile.leftConnections != null) {
             sb.Append(string.Join(", ", tile.leftConnections));
-        }
-        else
-        {
-             sb.Append("None");
-        }
-         sb.AppendLine();
-        sb.Append("    Right Connections: ");
-         if (tile.rightConnections != null)
-        {
-            sb.Append(string.Join(", ", tile.rightConnections));
-        }
-        else
-        {
+        } else {
             sb.Append("None");
         }
-         sb.AppendLine();
+        sb.AppendLine();
+        sb.Append("    Right Connections: ");
+        if (tile.rightConnections != null) {
+            sb.Append(string.Join(", ", tile.rightConnections));
+        } else {
+            sb.Append("None");
+        }
+        sb.AppendLine();
         return sb.ToString();
     }
 
-        private string GridCellToString(WFCGridCell cell) {
+    private string GridCellToString(WFCGridCell cell) {
         if (cell.collapsed) {
-           if (cell.possibleTiles != null && cell.possibleTiles.Count > 0) {
-             return cell.possibleTiles[0].tileType.ToString();
-           } else {
-              return "Error";
-           }
+            if (cell.possibleTiles != null && cell.possibleTiles.Count > 0) {
+                return cell.possibleTiles[0].tileType.ToString();
+            } else {
+                return "Error";
+            }
         } else {
-             return $"[{cell.possibleTiles.Count}]";
-         }
+            return $"[{cell.possibleTiles.Count}]";
+        }
     }
 }

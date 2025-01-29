@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public struct Tile {
     public TileType tileType;
-    public List<Sprite> possibleSprites;
+    public List<GameObject> possiblePrefabs;
     public List<TileType> upConnections;
     public List<TileType> downConnections;
     public List<TileType> leftConnections;

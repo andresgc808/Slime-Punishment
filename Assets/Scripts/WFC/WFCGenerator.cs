@@ -743,46 +743,39 @@ public class WFCGenerator : MonoBehaviour
         wfcData.wfcObject.grid[x, y] = cell;
     }
 
-    private void VisualizeMap()
-    {
-        // UnityEngine.Debug.Log("VisualizeMap: Starting map visualization");
-        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++)
-        {
-            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++)
-            {
+    private void VisualizeMap() {
+        UnityEngine.Debug.Log("VisualizeMap: Starting map visualization");
+        for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
+            for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
                 var cell = wfcData.wfcObject.grid[x, y];
-                if (cell.possibleTiles == null || cell.possibleTiles.Count == 0)
-                {
+                if (cell.possibleTiles == null || cell.possibleTiles.Count == 0) {
                     UnityEngine.Debug.LogError($"VisualizeMap: No valid tiles in cell at x:{x} y:{y}, skipping");
                     continue; // Skip if no tile could be placed
                 }
 
                 var tile = cell.possibleTiles[0];
-                if (tile.possibleSprites != null && tile.possibleSprites.Count > 0)
-                {
-                    int randomIndex = Random.Range(0, tile.possibleSprites.Count);
-                    Sprite chosenSprite = tile.possibleSprites[randomIndex];
+                if (tile.possiblePrefabs != null && tile.possiblePrefabs.Count > 0) {
+                    int randomIndex = Random.Range(0, tile.possiblePrefabs.Count);
+                    GameObject chosenPrefab = tile.possiblePrefabs[randomIndex];
 
-                    // UnityEngine.Debug.Log($"VisualizeMap: instantiating sprite: {chosenSprite}, at x: {x}, y: {y}");
-                    GameObject spriteObject = new GameObject(tile.tileType.ToString());
-                    SpriteRenderer renderer = spriteObject.AddComponent<SpriteRenderer>();
-                    renderer.sprite = chosenSprite;
+                    // Instantiate prefab with its own position
+                    GameObject instantiatedPrefab = Instantiate(chosenPrefab, Vector3.zero, Quaternion.identity);
 
-                    // Get the bounds of the sprite
-                    var bounds = renderer.sprite.bounds;
-                    // Calculate the offset to center the sprite
+                    // Get the bounds of the prefab
+                    var bounds = instantiatedPrefab.GetComponent<Renderer>().bounds;
+
+                    // Calculate the offset to center the prefab
                     var offset = new Vector3(bounds.center.x, bounds.center.y, 0);
 
-                    spriteObject.transform.position = new Vector3(x, y, 0) + offset + this.offset;
-                    spriteObject.transform.SetParent(spriteParent, true);
-                }
-                else
-                {
-                    UnityEngine.Debug.LogError($"VisualizeMap: No valid sprites in cell at x:{x} y:{y}, skipping");
+
+                    instantiatedPrefab.transform.position = new Vector3(x, y, 0) + offset + this.offset;
+                    instantiatedPrefab.transform.SetParent(spriteParent, true);
+                } else {
+                    UnityEngine.Debug.LogError($"VisualizeMap: No valid prefabs in cell at x:{x} y:{y}, skipping");
                 }
             }
         }
-        // UnityEngine.Debug.Log("VisualizeMap: Finished map visualization");
+        UnityEngine.Debug.Log("VisualizeMap: Finished map visualization");
     }
     private bool WFCArcConsistency()
     {
