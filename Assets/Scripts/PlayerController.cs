@@ -1,148 +1,161 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
-{
-    [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private float _baseMoveSpeed = 5f;
+public class PlayerController : MonoBehaviour {
+    [SerializeField] private float _currentSpeedMultiplier = 1f;
+    [SerializeField] private float _minSpeedMultiplier = 1f;
     [SerializeField] private float _maxSpeedMultiplier = 1.7f;
-    [SerializeField] private float _sizeDecreasePerShot = 0.05f; // percentage
-    [SerializeField] private float _damageIncreasePerShot = 0.10f; // percentage
-    [SerializeField] private float _minSizePercent = 0.2f;
-    [SerializeField] private float _maxSizeMultiplier = 1f;
+    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _baseMoveSpeed;
 
+    [SerializeField] private float _sizeDecreasePerShot = 0.05f; // percentage
+    [SerializeField] private float _minSizePercent = 0.5f;
     private Vector3 _baseScale;
+
+
+    [SerializeField] private float _damageIncreasePerShot = 0.05f; // percentage
+    [SerializeField] private float _currentDamageMultiplier = 1f;
+    [SerializeField] private float _maxDamageMultiplier = 3f;
+
+    [SerializeField] private float _healthDecreasePerShot = 0.05f; //percentage
+
     private Vector2 _movement;
     private Rigidbody2D _rb;
     private PlayerHealth _playerHealth;
 
-    public float SlimeCostPercent { get; set; } = 2f;
-    public float SizeMultiplier { get; private set; } = 1;
-    public float DamageMultiplier { get; private set; } = 1;
-    public float TotalSubstance { get; private set; } = 0;
-    private float _totalSubstanceLost;
+
     private float _totalSizeLost;
-    private float _totalDamageLost;
+    private float _totalDamageIncrease;
     private float _totalHealthLost;
+    private float _totalSpeedIncrease;
+
     private SpriteRenderer _spriteRenderer;
-    private void Awake()
-    {
+    private Transform _spriteTransform;
+
+
+    private void Awake() {
         _rb = GetComponent<Rigidbody2D>();
         _playerHealth = GetComponent<PlayerHealth>();
         if (_playerHealth == null)
             Debug.LogError("PlayerHealth component is missing!");
         _baseMoveSpeed = _moveSpeed;
-        _baseScale = transform.localScale;
-        _totalSubstanceLost = 0;
-        _totalSizeLost = 0;
-        _totalDamageLost = 0;
-        _totalHealthLost = 0;
-        _spriteRenderer = GetComponent<SpriteRenderer>();
 
-         if (_spriteRenderer == null)
+        // Get the sprite renderer, then get the transform, for child sprite.
+        _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        if (_spriteRenderer == null)
             Debug.LogError("SpriteRenderer component is missing!");
+
+        _spriteTransform = _spriteRenderer.transform; // Get the child sprite's transform
+
+        _baseScale = _spriteTransform.localScale;  // Base scale is now from the child.
+        ResetLostSubstance();
+
+    }
+    private (float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease)
+        UpdateStats() {
+        // Calculate changes as percentages of current values
+        float sizeLoss = _sizeDecreasePerShot;
+        float damageIncrease = _currentDamageMultiplier * _damageIncreasePerShot;
+        float healthLoss = _playerHealth.MaxHealth * _healthDecreasePerShot / 100f;
+        float speedIncrease = _currentSpeedMultiplier * 0.1f;
+
+        // Apply size change
+        _totalSizeLost += sizeLoss;
+        float newSize = Mathf.Max(_minSizePercent, 1 - _totalSizeLost);
+
+
+        Debug.Log($"SizeLoss: {sizeLoss}, NewSize: {newSize}, MinSizePercent: {_minSizePercent}");
+
+        _spriteTransform.localScale = _baseScale * newSize;
+
+        // Apply damage change
+        _currentDamageMultiplier = Mathf.Min(_maxDamageMultiplier, _currentDamageMultiplier + damageIncrease);
+        _totalDamageIncrease += damageIncrease;
+
+        // Apply health change
+        _playerHealth.ReduceMaxHealth(_healthDecreasePerShot * 100f);
+        _totalHealthLost += healthLoss;
+        // Apply Speed change
+        _currentSpeedMultiplier = Mathf.Min(_maxSpeedMultiplier, _currentSpeedMultiplier + speedIncrease);
+        _totalSpeedIncrease += speedIncrease;
+        _moveSpeed = _baseMoveSpeed * _currentSpeedMultiplier; // update speed
+        return (sizeLoss, damageIncrease, healthLoss, speedIncrease);
     }
 
-    private void Update()
-    {
+
+    private void Update() {
         _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
 
-        UpdateMovement();
-           UpdateSpriteFlip();
+        _rb.velocity = _movement * _moveSpeed;
+        UpdateSpriteFlip();
 
         // Handle shooting
-        if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive)
-        {
+        if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive) {
             ShootProjectile();
         }
     }
 
-    private void UpdateMovement()
-    {
-        // Calculate speed based on multipliers
-        float speedMultiplier = Mathf.Lerp(1f, _maxSpeedMultiplier, 1 - SizeMultiplier);
-        _moveSpeed = _baseMoveSpeed * speedMultiplier;
+    private void UpdateSpriteFlip() {
+        if (_movement.x > 0) {
+            _spriteRenderer.flipX = false;
 
-        // Apply movement and scale
-        transform.localScale = _baseScale * SizeMultiplier;
-        _rb.velocity = _movement * _moveSpeed;
-    }
-        private void UpdateSpriteFlip()
-    {
-        if (_movement.x > 0)
-        {
-           _spriteRenderer.flipX = false;
-           
-        }
-        else if (_movement.x < 0)
-        {
-             _spriteRenderer.flipX = true;
+        } else if (_movement.x < 0) {
+            _spriteRenderer.flipX = true;
         }
     }
 
-    private void ShootProjectile()
-    {
-        // Log for debugging
-        Debug.Log($"Size Multiplier before shot: {SizeMultiplier} Damage Multiplier before shot: {DamageMultiplier}, Local Scale before shot: {transform.localScale}");
-
+    private void ShootProjectile() {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         Vector2 direction = (mousePos - (Vector2)transform.position).normalized;
         Vector2 spawnPosition = (Vector2)transform.position + (direction * 0.5f);
 
         GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/SlimeProjectile"), spawnPosition, Quaternion.identity);
         IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
-        if (projectileComponent != null)
-        {
-            if (projectileComponent is SlimeProjectile slimeProjectile)
-            {
-                slimeProjectile.DamageMultiplier = DamageMultiplier;
+        if (projectileComponent != null) {
+            if (projectileComponent is SlimeProjectile slimeProjectile) {
+                slimeProjectile.DamageMultiplier = _currentDamageMultiplier;
                 slimeProjectile.SetDamage();
+                // Calculate the changes for this shot before updating stats.
+                (float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease) = UpdateStats();
+
+                // Set the substance data on the projectile
+                slimeProjectile.SetSubstanceData(sizeLoss, damageIncrease, healthLoss, speedIncrease);
             }
-
             projectileComponent.LaunchProjectile(spawnPosition, direction);
-            float reduceAmount = _playerHealth.MaxHealth * SlimeCostPercent / 100f;
-            _totalHealthLost += reduceAmount;
-            _playerHealth.ReduceMaxHealth(reduceAmount);
-            AdjustSizeAndDamage();
-            _totalSubstanceLost += reduceAmount;
-            Debug.Log($"Size Multiplier after shot: {SizeMultiplier} Damage Multiplier after shot: {DamageMultiplier}, Local Scale after shot: {transform.localScale} Total Substance Lost: {_totalSubstanceLost}");
         }
+
     }
 
+    public void IncreaseSizeAndDamage(SubstanceData substance) {
+        // Recover size
+        _totalSizeLost = Mathf.Max(0, _totalSizeLost - substance.sizeLoss);
+        float newSize = Mathf.Max(_minSizePercent, 1 - _totalSizeLost);
+        _spriteTransform.localScale = _baseScale * newSize;
 
-    private void AdjustSizeAndDamage()
-    {
-        // Calculate size change
-        float sizeChange = SizeMultiplier * _sizeDecreasePerShot;
-        // Reduce size, clamped by the minimum size
-        SizeMultiplier = Mathf.Max(SizeMultiplier * (1 - _sizeDecreasePerShot), _minSizePercent);
-        _totalSizeLost += sizeChange;
-        // Increase damage
-        float damageIncrease = _damageIncreasePerShot;
-        DamageMultiplier += _damageIncreasePerShot;
-        _totalDamageLost += damageIncrease;
+        // Recover damage
+        _totalDamageIncrease = Mathf.Max(0, _totalDamageIncrease - substance.damageIncrease);
+        _currentDamageMultiplier = Mathf.Max(1f, _currentDamageMultiplier - substance.damageIncrease);
 
+        // Recover health
+        _totalHealthLost = Mathf.Max(0, _totalHealthLost - substance.healthLoss);
+        _playerHealth.Heal(substance.healthLoss * 100f);
 
-        UpdateMovement(); // ensure move speed and scale are updated
+        // Recover speed
+        _totalSpeedIncrease = Mathf.Max(0, _totalSpeedIncrease - substance.speedIncrease);
+        _currentSpeedMultiplier = Mathf.Max(_minSpeedMultiplier, _currentSpeedMultiplier - substance.speedIncrease);
+        _moveSpeed = _baseMoveSpeed * _currentSpeedMultiplier;
+
+        Debug.Log($"Recovering substance: SizeLoss: {substance.sizeLoss}, DamageIncrease: {substance.damageIncrease}, HealthLost: {substance.healthLoss}, SpeedIncrease: {substance.speedIncrease}, _totalSizeLost: {_totalSizeLost}, _totalDamageIncrease: {_totalDamageIncrease}, _totalHealthLost: {_totalHealthLost}, _totalSpeedIncrease: {_totalSpeedIncrease}, newSize: {newSize}");
     }
-    public void IncreaseSizeAndDamage(float substance)
-    {
-        float sizeIncrease = Mathf.Min(substance / _totalSubstanceLost, 1f);
-        float damageIncrease = Mathf.Min(substance / _totalSubstanceLost, 1f);
-        float healthIncrease = Mathf.Min(substance / _totalSubstanceLost, 1f);
 
-
-        SizeMultiplier += _totalSizeLost * sizeIncrease;
-        DamageMultiplier += _totalDamageLost * damageIncrease;
-        _playerHealth.Heal(_totalHealthLost * healthIncrease);
-
-
-
-        TotalSubstance -= substance;
-        _totalSizeLost -= _totalSizeLost * sizeIncrease;
-        _totalDamageLost -= _totalDamageLost * damageIncrease;
-        _totalHealthLost -= _totalHealthLost * healthIncrease;
-        UpdateMovement(); // ensure move speed and scale are updated
-        Debug.Log($"Size Multiplier after pickup: {SizeMultiplier} Health after pickup: {_playerHealth.MaxHealth} Damage Multiplier after pickup: {DamageMultiplier}, Local Scale after pickup: {transform.localScale} Total Substance: {TotalSubstance}");
+    private void ResetLostSubstance() {
+        _totalSizeLost = 0;
+        _totalDamageIncrease = 0;
+        _totalHealthLost = 0;
+        _totalSpeedIncrease = 0;
+        float newSize = Mathf.Max(_minSizePercent, 1 - _totalSizeLost);
+        _spriteTransform.localScale = _baseScale * newSize;
+        Debug.Log($"Substance reset, newSize:{newSize}");
     }
 }
