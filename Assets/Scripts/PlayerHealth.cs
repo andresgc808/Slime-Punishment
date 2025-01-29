@@ -16,6 +16,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     public HealthTracker healthTracker;
 
+    public bool IsInvulnerable { get; set; }
+
     public void Start()
     {
         Health = MaxHealth;
@@ -28,6 +30,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     {
         if (Health <= 0) return;
 
+        if (IsInvulnerable) return;
+        
         float damageReceived = damage;
         Health -= damageReceived; // armor can be changed later to be more complex
 

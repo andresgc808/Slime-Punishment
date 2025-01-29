@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour {
     [SerializeField] private float _currentSpeedMultiplier = 1f;
@@ -31,6 +32,11 @@ public class PlayerController : MonoBehaviour {
 
     private SpriteRenderer _spriteRenderer;
     private Transform _spriteTransform;
+
+    private bool canDodge;
+    private float lastDodgeTime;
+
+    private bool dodging;
 
 
     private void Awake() {
@@ -85,14 +91,22 @@ public class PlayerController : MonoBehaviour {
 
 
     private void Update() {
-        _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
 
-        _rb.velocity = _movement * _moveSpeed;
-        UpdateSpriteFlip();
+        if (!dodging) {
+            _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
+
+            _rb.velocity = _movement * _moveSpeed;
+            UpdateSpriteFlip();
+        }
+        
 
         // Handle shooting
         if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive) {
             ShootProjectile();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            StartCoroutine(HandleDodge());
         }
     }
 
@@ -147,6 +161,42 @@ public class PlayerController : MonoBehaviour {
         _moveSpeed = _baseMoveSpeed * _currentSpeedMultiplier;
 
         Debug.Log($"Recovering substance: SizeLoss: {substance.sizeLoss}, DamageIncrease: {substance.damageIncrease}, HealthLost: {substance.healthLoss}, SpeedIncrease: {substance.speedIncrease}, _totalSizeLost: {_totalSizeLost}, _totalDamageIncrease: {_totalDamageIncrease}, _totalHealthLost: {_totalHealthLost}, _totalSpeedIncrease: {_totalSpeedIncrease}, newSize: {newSize}");
+    }
+
+    private IEnumerator HandleDodge() {
+        Debug.Log("Dodge!");
+
+        // check if player can dodge (3 seconds cooldown)
+        if (Time.time - lastDodgeTime > 3) {
+            lastDodgeTime = Time.time;
+            canDodge = true;
+        }
+
+        // become invulnerable for 0.25 seconds
+        if (canDodge) {
+            canDodge = false;
+            dodging = true;
+            _playerHealth.IsInvulnerable = true;
+
+            // apply burst of speed
+            _rb.velocity = _movement * _moveSpeed * 2;
+
+            // make sprite transparent
+            _spriteRenderer.color = new Color(1, 1, 1, 0.5f);
+
+            yield return new WaitForSeconds(0.25f); // become invulnerable for 0.25 seconds
+
+            // reset speed
+            _rb.velocity = _movement * _moveSpeed;
+
+            // reset sprite transparency
+            _spriteRenderer.color = new Color(1, 1, 1, 1);
+
+            _playerHealth.IsInvulnerable = true;
+
+            dodging = false;
+        }
+        
     }
 
     private void ResetLostSubstance() {
