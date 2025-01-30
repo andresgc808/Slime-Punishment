@@ -17,6 +17,8 @@ public enum TileType {
     UpperBridge,
     LeftBridge,
     RightBridge,
-    DiagRightBridge,
-    DiagLeftBridge,
+    LowerLeftCurve,
+    LowerRightCurve,
+    UpperLeftCurve,
+    UpperRightCurve,
 }
