@@ -27,8 +27,10 @@ public class WFCGenerator : MonoBehaviour
     private Stack<WFCGridCell[,]> _backtrackGridStateStack = new Stack<WFCGridCell[,]>();
 
     [SerializeField] private int _waterLayers = 1; // Serialized field for number of water layers
+    private bool _generationTimedOut = false;
+    private Stopwatch _generationStopwatch;
 
-    private class WFCTestResult
+   private class WFCTestResult
     {
         public int Seed { get; set; }
         public bool Success { get; set; }
@@ -44,111 +46,141 @@ public class WFCGenerator : MonoBehaviour
     [ContextMenu("Generate with Arc Consistency")]
     public void GenerateWithArcConsistency()
     {
+         _generationTimedOut = false;
+        _generationStopwatch = Stopwatch.StartNew();
         ClearSprites();
-        Stopwatch stopwatch = Stopwatch.StartNew();
         bool generationSuccess = WFCArcConsistency();
-        stopwatch.Stop();
-        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+       _generationStopwatch.Stop();
+        long elapsedMilliseconds = _generationStopwatch.ElapsedMilliseconds;
 
         if (generationSuccess)
         {
             VisualizeMap();
-            UnityEngine.Debug.Log($"Map Generation Complete (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.Log($"Map Generation Complete (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
-        else
+        else if (_generationTimedOut)
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Timed Out (Arc Consistency) after {_generationStopwatch.ElapsedMilliseconds} ms. Seed: {seed}");
+        }
+        else{
+              UnityEngine.Debug.LogError($"Map Generation Failed (Arc Consistency). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+         seed = -1; //Reset seed
+
     }
 
     [ContextMenu("Generate")]
     public void Generate()
     {
+         _generationTimedOut = false;
+        _generationStopwatch = Stopwatch.StartNew();
         ClearSprites();
-        Stopwatch stopwatch = Stopwatch.StartNew();
         bool generationSuccess = WFCBasic(false, false); // No cache, no forward checking
-        stopwatch.Stop();
-        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        _generationStopwatch.Stop();
+        long elapsedMilliseconds = _generationStopwatch.ElapsedMilliseconds;
 
         if (generationSuccess)
         {
             VisualizeMap();
-            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+           UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
+        }
+        else if (_generationTimedOut)
+        {
+             UnityEngine.Debug.LogError($"Map Generation Timed Out (No Cache, No FC) after {_generationStopwatch.ElapsedMilliseconds} ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+         seed = -1; //Reset seed
     }
 
     [ContextMenu("Generate With Cache")]
     public void GenerateWithCache()
     {
+         _generationTimedOut = false;
+        _generationStopwatch = Stopwatch.StartNew();
         ClearSprites();
-        Stopwatch stopwatch = Stopwatch.StartNew();
         bool generationSuccess = WFCBasic(true, false); // With cache, no forward checking
-        stopwatch.Stop();
-        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+       _generationStopwatch.Stop();
+        long elapsedMilliseconds = _generationStopwatch.ElapsedMilliseconds;
 
-        if (generationSuccess)
+         if (generationSuccess)
         {
             VisualizeMap();
-            UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+          UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
+        }
+         else if (_generationTimedOut)
+        {
+            UnityEngine.Debug.LogError($"Map Generation Timed Out (Cache, No FC) after {_generationStopwatch.ElapsedMilliseconds} ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+         seed = -1; //Reset seed
     }
 
     [ContextMenu("Generate With Forward Checking")]
     public void GenerateWithForwardChecking()
     {
+         _generationTimedOut = false;
+        _generationStopwatch = Stopwatch.StartNew();
         ClearSprites();
-        Stopwatch stopwatch = Stopwatch.StartNew();
         bool generationSuccess = WFCBasic(false, true); // No cache, With forward checking
-        stopwatch.Stop();
-        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+       _generationStopwatch.Stop();
+        long elapsedMilliseconds = _generationStopwatch.ElapsedMilliseconds;
 
-        if (generationSuccess)
+         if (generationSuccess)
         {
             VisualizeMap();
-            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+             UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
+        }
+          else if (_generationTimedOut)
+        {
+             UnityEngine.Debug.LogError($"Map Generation Timed Out (No Cache, FC) after {_generationStopwatch.ElapsedMilliseconds} ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+         seed = -1; //Reset seed
     }
 
     [ContextMenu("Generate With Cache and Forward Checking")]
     public void GenerateWithCacheAndForwardChecking()
     {
+         _generationTimedOut = false;
+        _generationStopwatch = Stopwatch.StartNew();
         ClearSprites();
-        Stopwatch stopwatch = Stopwatch.StartNew();
         bool generationSuccess = WFCBasic(true, true); // With cache and forward checking
-        stopwatch.Stop();
-        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        _generationStopwatch.Stop();
+        long elapsedMilliseconds = _generationStopwatch.ElapsedMilliseconds;
 
         if (generationSuccess)
         {
             VisualizeMap();
-            UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+             UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
+        }
+           else if (_generationTimedOut)
+        {
+            UnityEngine.Debug.LogError($"Map Generation Timed Out (Cache, FC) after {_generationStopwatch.ElapsedMilliseconds} ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+          seed = -1; //Reset seed
     }
 
 
@@ -163,14 +195,15 @@ public class WFCGenerator : MonoBehaviour
 
         if (generationSuccess)
         {
-            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+             UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+           UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+          seed = -1; //Reset seed
     }
 
     [ContextMenu("Test Performance With Cache")]
@@ -184,14 +217,15 @@ public class WFCGenerator : MonoBehaviour
 
         if (generationSuccess)
         {
-            UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+           UnityEngine.Debug.Log($"Map Generation Complete (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+          seed = -1; //Reset seed
     }
 
     [ContextMenu("Test Performance With Forward Checking")]
@@ -205,14 +239,15 @@ public class WFCGenerator : MonoBehaviour
 
         if (generationSuccess)
         {
-            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.LogError($"Map Generation Failed (No Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+          seed = -1; //Reset seed
     }
 
     [ContextMenu("Test Performance With Cache and Forward Checking")]
@@ -224,16 +259,17 @@ public class WFCGenerator : MonoBehaviour
         stopwatch.Stop();
         long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-        if (generationSuccess)
+         if (generationSuccess)
         {
-            UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+            UnityEngine.Debug.Log($"Map Generation Complete (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
-        else
+         else
         {
-            UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms");
+           UnityEngine.Debug.LogError($"Map Generation Failed (Cache, FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         _totalNodesExpanded = 0;
         _totalRetries = 0;
+          seed = -1; //Reset seed
     }
 
 
@@ -266,6 +302,7 @@ public class WFCGenerator : MonoBehaviour
 
             WFCTestResult cacheFCResult = RunTest(true, true, currentSeed);
             cacheFCResults.Add(cacheFCResult);
+             seed = -1; //Reset seed
         }
         ReportResults("No Cache, No FC", noCacheNoFCResults);
         ReportResults("Cache, No FC", cacheNoFCResults);
@@ -333,9 +370,15 @@ public class WFCGenerator : MonoBehaviour
     }
 
 
+     private int _retryCount;
     private bool WFCBasic(bool useCache, bool useForwardChecking)
     {
-        UnityEngine.Debug.Log($"WFCBasic: Starting WFC process, Caching = {useCache}, Forward Checking = {useForwardChecking}");
+          if (_generationStopwatch.ElapsedMilliseconds > 90) // 2 minutes timeout
+        {
+            _generationTimedOut = true;
+            return false;
+        }
+          UnityEngine.Debug.Log($"WFCBasic: Starting WFC process, Caching = {useCache}, Forward Checking = {useForwardChecking}");
         if (wfcData.wfcObject.tiles.Count == 0)
         {
             UnityEngine.Debug.LogError("WFCBasic: No tiles in wfcData!");
@@ -346,18 +389,30 @@ public class WFCGenerator : MonoBehaviour
             UnityEngine.Debug.LogError("WFCBasic: WFC Grid size cannot be zero");
             return false;
         }
+            // Generate a seed if one isn't already set
+        if (seed == -1)
+        {
+            seed = UnityEngine.Random.Range(1, int.MaxValue);
+             UnityEngine.Debug.Log($"WFCBasic: No seed set, generating new one, seed is {seed}");
+        }
 
-        int maxRetries = 500;
+        int maxRetries = 5; // Reduced for testing purposes
         bool finished = false;
 
-        if (seed != -1)
-        {
-            Random.InitState(seed);
-        }
+
+        Random.InitState(seed);
+        
+        _retryCount = 0;
 
         for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
         {
-            _totalRetries++;
+            if (_generationStopwatch.ElapsedMilliseconds > 40000) // 2 minutes timeout
+            {
+                 _generationTimedOut = true;
+                return false;
+            }
+              _totalRetries++;
+              _retryCount++;
             _backtrackStack.Clear(); // Clear the backtrack stack at the beginning of each retry
             _backtrackGridStateStack.Clear(); // Clear the grid state stack at the beginning of each retry
 
@@ -365,31 +420,55 @@ public class WFCGenerator : MonoBehaviour
             wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
 
             PrePopulateEdgesWithWater(useCache, useForwardChecking);
-
+            int infiniteLoopCounter = 0; // Initialize the counter
+             WFCGridCell previousCell = new WFCGridCell();
             while (!finished)
             {
-                if (Collapse(out WFCGridCell cell, useForwardChecking))
-                {
-                    _totalNodesExpanded++;
-                    Propagate(cell, useCache, useForwardChecking);
+                    if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+                     {
+                     _generationTimedOut = true;
+                         return false;
+                     }
 
-                    if (CheckIfDone())
+                   WFCGridCell currentCell;
+                    if (Collapse(out currentCell, useForwardChecking))
                     {
-                        finished = true;
-                    }
-                    else if (HasContradiction())
-                    {
-                        // Backtrack if contradiction is found
-                        if (!Backtrack())
+                         if (currentCell.x == previousCell.x && currentCell.y == previousCell.y)
+                            {
+                                infiniteLoopCounter++;
+                                if (infiniteLoopCounter > 10) // arbitrary threshold
+                                {
+                                    UnityEngine.Debug.LogError("WFCBasic: Possible infinite backtracking loop detected. Restarting with a different seed.");
+                                    ResetSeedAndRetry();
+                                    return false;
+                                }
+                                
+                            }
+                            else{
+                                infiniteLoopCounter = 0;
+                            }
+                                previousCell = currentCell;
+                                
+                        _totalNodesExpanded++;
+                        Propagate(currentCell, useCache, useForwardChecking);
+
+                        if (CheckIfDone())
                         {
-                            break; // If backtracking fails, break to the outer loop for retry
+                            finished = true;
+                        }
+                        else if (HasContradiction())
+                        {
+                            // Backtrack if contradiction is found
+                            if (!Backtrack())
+                            {
+                                break; // If backtracking fails, break to the outer loop for retry
+                            }
                         }
                     }
-                }
-                else
-                {
-                    break; // If cannot collapse, break out of inner loop, and retry
-                }
+                    else
+                    {
+                        break; // If cannot collapse, break out of inner loop, and retry
+                    }
             }
             if (finished)
             {
@@ -403,6 +482,181 @@ public class WFCGenerator : MonoBehaviour
         UnityEngine.Debug.LogError("WFCBasic: WFC process failed after multiple retries");
         UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
         return false; // Return false if max retries are exhausted
+    }
+private void ResetSeedAndRetry()
+    {
+           if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+            {
+                 _generationTimedOut = true;
+                return;
+            }
+            if (_retryCount > 5){
+             UnityEngine.Debug.LogError("WFCBasic: Max retries with new seeds exceeded");
+             return;
+            }
+       
+        
+             seed = UnityEngine.Random.Range(1, int.MaxValue); // Or any other new seed generation logic
+            UnityEngine.Debug.Log($"Resetting with new seed {seed} and restarting WFC.");
+            
+           WFCBasic(false, false);
+            
+    }
+     private bool WFCArcConsistency()
+    {
+          if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+        {
+            _generationTimedOut = true;
+            return false;
+        }
+        UnityEngine.Debug.Log($"WFCArcConsistency: Starting WFC process with Arc Consistency");
+        if (wfcData.wfcObject.tiles.Count == 0)
+        {
+            UnityEngine.Debug.LogError("WFCArcConsistency: No tiles in wfcData!");
+            return false;
+        }
+        if (wfcData.wfcObject.gridSize.x == 0 || wfcData.wfcObject.gridSize.y == 0)
+        {
+            UnityEngine.Debug.LogError("WFCArcConsistency: WFC Grid size cannot be zero");
+            return false;
+        }
+            // Generate a seed if one isn't already set
+        if (seed == -1)
+        {
+            seed = UnityEngine.Random.Range(1, int.MaxValue);
+             UnityEngine.Debug.Log($"WFCArcConsistency: No seed set, generating new one, seed is {seed}");
+        }
+         int maxRetries = 5;
+        bool finished = false;
+
+        Random.InitState(seed);
+           _retryCount = 0;
+
+        for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
+        {
+              if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+            {
+                 _generationTimedOut = true;
+                return false;
+            }
+            _totalRetries++;
+            _retryCount++;
+            _backtrackStack.Clear();
+            _backtrackGridStateStack.Clear(); // Clear the grid state stack at the beginning of each retry
+            wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
+
+            PrePopulateEdgesWithWater(false, false);
+
+
+            if (!EstablishArcConsistency())
+            {
+                if (!Backtrack())
+                {
+                    continue;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+             int infiniteLoopCounter = 0; // Initialize the counter
+             WFCGridCell previousCell = new WFCGridCell();
+
+            while (!finished)
+            {
+                  if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+                     {
+                     _generationTimedOut = true;
+                         return false;
+                     }
+                 WFCGridCell currentCell;
+                if (Collapse(out currentCell, false))
+                {
+                     if (currentCell.x == previousCell.x && currentCell.y == previousCell.y)
+                            {
+                                infiniteLoopCounter++;
+                                if (infiniteLoopCounter > 10) // arbitrary threshold
+                                {
+                                     UnityEngine.Debug.LogError("WFCArcConsistency: Possible infinite backtracking loop detected. Restarting with a different seed.");
+                                     ResetSeedAndRetryArc();
+                                    return false;
+                                }
+                            }
+                            else{
+                                infiniteLoopCounter = 0;
+                            }
+                            previousCell = currentCell;
+
+                    _totalNodesExpanded++;
+
+                    if (!EstablishArcConsistency())
+                    {
+                        // Backtrack if contradiction is found
+                        if (!Backtrack())
+                        {
+                            break; // If backtracking fails, break to the outer loop for retry
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (CheckIfDone())
+                    {
+                        finished = true;
+                    }
+                    else if (HasContradiction())
+                    {
+                        if (!Backtrack())
+                        {
+                            break; // If backtracking fails, break to the outer loop for retry
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (finished)
+            {
+                UnityEngine.Debug.Log("WFCArcConsistency: WFC process finished");
+                UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+                return true;
+            }
+
+        }
+        UnityEngine.Debug.LogError("WFCArcConsistency: WFC process failed after multiple retries");
+        UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
+        return false;
+
+    }
+
+private void ResetSeedAndRetryArc()
+    {
+            if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+            {
+                 _generationTimedOut = true;
+                return;
+            }
+           if (_retryCount > 5){
+             UnityEngine.Debug.LogError("WFCArcConsistency: Max retries with new seeds exceeded");
+             return;
+            }
+       
+        
+           seed = UnityEngine.Random.Range(1, int.MaxValue); // Or any other new seed generation logic
+            UnityEngine.Debug.Log($"Resetting with new seed {seed} and restarting WFC.");
+            
+           WFCArcConsistency();
+            
     }
 
 
@@ -482,14 +736,14 @@ public class WFCGenerator : MonoBehaviour
     {
         if (x < 0 || x >= wfcData.wfcObject.gridSize.x || y < 0 || y >= wfcData.wfcObject.gridSize.y)
         {
-            UnityEngine.Debug.LogError($"SetCellToTile: Invalid cell coordinates x:{x}, y:{y}");
+            // UnityEngine.Debug.LogError($"SetCellToTile: Invalid cell coordinates x:{x}, y:{y}");
             return;
         }
         WFCGridCell cell = wfcData.wfcObject.grid[x, y];
         cell.possibleTiles = new List<Tile>() { tile };
         cell.collapsed = true;
         wfcData.wfcObject.grid[x, y] = cell;
-        UnityEngine.Debug.Log($"SetCellToTile: Set cell at x: {x}, y: {y} to tile {tile.tileType}");
+        // UnityEngine.Debug.Log($"SetCellToTile: Set cell at x: {x}, y: {y} to tile {tile.tileType}");
     }
 
     private bool CheckIfDone()
@@ -511,7 +765,16 @@ public class WFCGenerator : MonoBehaviour
         return true;
     }
 
-    private bool Collapse(out WFCGridCell lowestEntropyCell, bool useForwardChecking)
+     private Dictionary<TileType, float> _rerollChance = new Dictionary<TileType, float>()
+    {
+        { TileType.LowerBridge, 0.35f },
+        { TileType.UpperBridge, 0.35f },
+        { TileType.LeftBridge, 0.15f },
+        { TileType.RightBridge, 0.15f },
+        
+        //Other tile biases can be added here.
+    };
+ private bool Collapse(out WFCGridCell lowestEntropyCell, bool useForwardChecking)
     {
         lowestEntropyCell = new WFCGridCell();
         List<WFCGridCell> possibleCells = new List<WFCGridCell>();
@@ -556,26 +819,34 @@ public class WFCGenerator : MonoBehaviour
             return false;
         }
 
-        Tile chosenTile;
+         Tile chosenTile;
         if (lowestEntropyCell.possibleTiles.Count > 1)
         {
             int index = Random.Range(0, lowestEntropyCell.possibleTiles.Count);
-            chosenTile = lowestEntropyCell.possibleTiles[index];
-            _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
-            _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
-            lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
-
+             chosenTile = lowestEntropyCell.possibleTiles[index];
+             if (_rerollChance.ContainsKey(chosenTile.tileType))
+                {
+                    float reroll =  _rerollChance[chosenTile.tileType];
+                    if (Random.value > reroll) {
+                          index = Random.Range(0, lowestEntropyCell.possibleTiles.Count);
+                           chosenTile = lowestEntropyCell.possibleTiles[index];
+                    }
+                }
+                _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
+             _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
+           lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
         }
         else
         {
             chosenTile = lowestEntropyCell.possibleTiles[0];
-            _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
+             _backtrackStack.Push((lowestEntropyCell, new List<Tile>(lowestEntropyCell.possibleTiles)));
             _backtrackGridStateStack.Push(CopyGrid(wfcData.wfcObject.grid)); //Save our grid state for this decision.
             lowestEntropyCell.possibleTiles = new List<Tile>() { chosenTile };
         }
+        
+        
 
-
-
+       
         lowestEntropyCell.collapsed = true;
         wfcData.wfcObject.grid[lowestEntropyCell.x, lowestEntropyCell.y] = lowestEntropyCell;
         return true;
@@ -792,104 +1063,7 @@ public class WFCGenerator : MonoBehaviour
         }
         UnityEngine.Debug.Log("VisualizeMap: Finished map visualization");
     }
-    private bool WFCArcConsistency()
-    {
-        UnityEngine.Debug.Log($"WFCArcConsistency: Starting WFC process with Arc Consistency");
-        if (wfcData.wfcObject.tiles.Count == 0)
-        {
-            UnityEngine.Debug.LogError("WFCArcConsistency: No tiles in wfcData!");
-            return false;
-        }
-        if (wfcData.wfcObject.gridSize.x == 0 || wfcData.wfcObject.gridSize.y == 0)
-        {
-            UnityEngine.Debug.LogError("WFCArcConsistency: WFC Grid size cannot be zero");
-            return false;
-        }
-
-        int maxRetries = 500;
-        bool finished = false;
-        if (seed != -1)
-        {
-            Random.InitState(seed);
-        }
-
-        for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
-        {
-            _totalRetries++;
-            _backtrackStack.Clear();
-            _backtrackGridStateStack.Clear(); // Clear the grid state stack at the beginning of each retry
-            wfcData.wfcObject.InitializeGrid(wfcData.wfcObject.tiles);
-
-            PrePopulateEdgesWithWater(false, false);
-
-
-            if (!EstablishArcConsistency())
-            {
-                if (!Backtrack())
-                {
-                    continue;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-
-
-            while (!finished)
-            {
-                if (Collapse(out WFCGridCell cell, false))
-                {
-                    _totalNodesExpanded++;
-
-                    if (!EstablishArcConsistency())
-                    {
-                        // Backtrack if contradiction is found
-                        if (!Backtrack())
-                        {
-                            break; // If backtracking fails, break to the outer loop for retry
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    if (CheckIfDone())
-                    {
-                        finished = true;
-                    }
-                    else if (HasContradiction())
-                    {
-                        if (!Backtrack())
-                        {
-                            break; // If backtracking fails, break to the outer loop for retry
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                }
-                else
-                {
-                    break;
-                }
-            }
-            if (finished)
-            {
-                UnityEngine.Debug.Log("WFCArcConsistency: WFC process finished");
-                UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
-                return true;
-            }
-
-        }
-        UnityEngine.Debug.LogError("WFCArcConsistency: WFC process failed after multiple retries");
-        UnityEngine.Debug.Log(wfcData.wfcObject.ToString());
-        return false;
-
-    }
+    
     private bool EstablishArcConsistency()
     {
         bool changed = true;
