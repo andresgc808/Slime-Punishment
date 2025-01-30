@@ -19,6 +19,7 @@ public class RunManager : MonoBehaviour
 
     public int RemainingEnemies => _remainingEnemies;
     public bool CanAccessBossRoom => _canAccessBossRoom;
+    public bool timerOngoing;
     public float TimeSinceStart => _timeSinceStart;
 
     // reference to TMP timer text
@@ -41,6 +42,7 @@ public class RunManager : MonoBehaviour
         _remainingEnemies = GameObject.FindGameObjectsWithTag("Enemy").Length;
         _canAccessBossRoom = false;
         _timeSinceStart = 0f;
+        timerOngoing = true;
     }
 
     private void Update()
@@ -64,6 +66,7 @@ public class RunManager : MonoBehaviour
         if (_remainingEnemies <= 0)
         {
             _canAccessBossRoom = true;
+            timerOngoing = false;
         }
     }
 }
