@@ -58,19 +58,18 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         if (!IsAlive)
         {
             OnDeath?.Invoke();
-            SoundManager.instance.Stop(collisionSoundName);
+
+            if (SoundManager.instance != null)
+                SoundManager.instance.Stop(collisionSoundName);
+
+
             Debug.Log($"{gameObject.name} has died.");
             ExcreteSubstance(); // Excrete if there is substance
             Destroy(gameObject);
 
         }
     }
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.TryGetComponent(out IProjectile projectile))
-            TakeDamage(projectile.Damage);
-
-    }
+  
     private void ExcreteSubstance()
     {
         if (_storedSizeLoss <= 0 && _storedDamageIncrease <= 0 && _storedHealthLost <= 0 && _storedSpeedIncrease <= 0) return;
@@ -102,7 +101,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             if (_damageCoroutine == null)
                 _damageCoroutine = StartCoroutine(ApplyContinuousDamage());
 
-            SoundManager.instance.Play(collisionSoundName);
+            if (SoundManager.instance != null)
+                SoundManager.instance.Play(collisionSoundName);
         }
     }
 
@@ -116,7 +116,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 StopCoroutine(_damageCoroutine);
                 _damageCoroutine = null;
 
-                SoundManager.instance.Stop(collisionSoundName);
+                if (SoundManager.instance != null)
+                    SoundManager.instance.Stop(collisionSoundName);
             }
         }
     }

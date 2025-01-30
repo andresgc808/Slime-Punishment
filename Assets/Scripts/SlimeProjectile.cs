@@ -5,7 +5,7 @@ public class SlimeProjectile : MonoBehaviour, IProjectile {
     public Vector2 Direction { get; set; }
     public float Speed { get; set; } = 5f;
     public float BaseDamage { get; set; } = 10f;
-    public float DamageMultiplier { get; set; } = 1f; // public so player controller can change it
+    public float DamageMultiplier { get; set; } = 1f;
     public float Damage { get; private set; }
     public float healAmount { get; set; } = 10f;
     public GameObject GameObject => gameObject;
@@ -22,10 +22,8 @@ public class SlimeProjectile : MonoBehaviour, IProjectile {
 
     private void Awake() {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        // Put it on a higher layer name like "Foreground"
-        sr.sortingLayerName = "Foreground"; 
-        // And/or bump up that sorting order to some big spicy number
-        sr.sortingOrder = 999; 
+        sr.sortingLayerName = "Foreground";
+        sr.sortingOrder = 999;
     }
 
     public void SetSubstanceData(float sizeLost, float damageIncrease, float healthLost, float speedIncrease) {
@@ -57,13 +55,18 @@ public class SlimeProjectile : MonoBehaviour, IProjectile {
             Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, collisionRadius, targetLayer);
 
             foreach (var collider in colliders) {
+                if (collider == null)
+                    continue;
                 if (collider.TryGetComponent(out IDamageable target)) {
+
                     Debug.Log($"Projectile hit target! Dealing {Damage} damage, sizeLost:{SizeLost}, DamageIncrease: {DamageIncrease}, HealthLost: {HealthLost}, SpeedIncrease: {SpeedIncrease}");
                     if (target is EnemyHealth enemyHealth) {
                         enemyHealth.StoreSubstance(SizeLost, DamageIncrease, HealthLost, SpeedIncrease);
+                        if (target != null)
+                            target.TakeDamage(Damage);
 
                     }
-                    target.TakeDamage(Damage);
+             
                     DestroyProjectile();
                     yield break;
                 }
