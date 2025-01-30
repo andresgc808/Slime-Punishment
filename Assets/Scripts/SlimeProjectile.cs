@@ -20,6 +20,13 @@ public class SlimeProjectile : MonoBehaviour, IProjectile {
     public float HealthLost { get; private set; }
     public float SpeedIncrease { get; private set; }
 
+    private void Awake() {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        // Put it on a higher layer name like "Foreground"
+        sr.sortingLayerName = "Foreground"; 
+        // And/or bump up that sorting order to some big spicy number
+        sr.sortingOrder = 999; 
+    }
 
     public void SetSubstanceData(float sizeLost, float damageIncrease, float healthLost, float speedIncrease) {
         SizeLost = sizeLost;

@@ -8,12 +8,14 @@ public class TurretEnemy : MonoBehaviour
     private Rigidbody2D _rb;
     private SpriteRenderer _spriteRenderer;
 
-    private float agroRange = 5f;
+    [SerializeField] private float agroRange = 5f;
 
     private Coroutine _attackCoroutine; // Store the coroutine reference
     private bool _isAttacking = false;
 
     [SerializeField] private float _fireRate = 1f;
+
+    private Animator _animator;
 
     private void Awake() {
         _rb = GetComponent<Rigidbody2D>();
@@ -24,6 +26,9 @@ public class TurretEnemy : MonoBehaviour
               target = player.transform;
         }
         _spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // grab animator
+        _animator = GetComponent<Animator>();
     }
     private void Update()
     {
@@ -60,6 +65,12 @@ public class TurretEnemy : MonoBehaviour
         if (_attackCoroutine != null) return; // Prevent starting a new coroutine if one exists
         _attackCoroutine = StartCoroutine(AttackCoroutine());
         _isAttacking = true;
+
+        // Set the inAttackRange bool to true to begin the shooting animation
+        if (_animator != null)
+        {
+            _animator.SetBool("inAttackRange", true);
+        }
     }
 
     private void StopAttackCoroutine() {
@@ -67,6 +78,12 @@ public class TurretEnemy : MonoBehaviour
         StopCoroutine(_attackCoroutine);
         _attackCoroutine = null;
         _isAttacking = false;
+
+        // Set the inAttackRange bool to false to stop the shooting animation
+        if (_animator != null)
+        {
+            _animator.SetBool("inAttackRange", false);
+        }
     }
 
     private IEnumerator AttackCoroutine() {
