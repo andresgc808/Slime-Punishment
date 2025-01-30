@@ -406,7 +406,7 @@ public class WFCGenerator : MonoBehaviour
 
         for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
         {
-            if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+            if (_generationStopwatch.ElapsedMilliseconds > 40000) // 2 minutes timeout
             {
                  _generationTimedOut = true;
                 return false;

@@ -15,19 +15,17 @@ public class BlueBullet : MonoBehaviour, IProjectile {
 
     public void Awake() {
         SetDamage();
-    }
 
-    public void SetDamage() {
-        Damage = BaseDamage * DamageMultiplier;
-        //Debug.Log($"Set Damage called, Base Damage: {BaseDamage}, Damage Multiplier: {DamageMultiplier}, Resulting Damage: {Damage}");
-    }
-
-    private void Awake() {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         // Put it on a higher layer name like "Foreground"
         sr.sortingLayerName = "Foreground"; 
         // And/or bump up that sorting order to some big spicy number
         sr.sortingOrder = 999; 
+    }
+
+    public void SetDamage() {
+        Damage = BaseDamage * DamageMultiplier;
+        //Debug.Log($"Set Damage called, Base Damage: {BaseDamage}, Damage Multiplier: {DamageMultiplier}, Resulting Damage: {Damage}");
     }
 
     public void LaunchProjectile(Vector2 startingPosition, Vector2 direction) {
