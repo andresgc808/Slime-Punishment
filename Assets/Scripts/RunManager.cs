@@ -67,6 +67,15 @@ public class RunManager : MonoBehaviour
         {
             _canAccessBossRoom = true;
             timerOngoing = false;
+
+            
+            int timeEntry = (int)_timeSinceStart;
+
+            //save score
+            if (HighScoreTable.Instance != null)
+            {
+                HighScoreTable.Instance.AddHighscoreEntry(timeEntry, "AAA");
+            }
         }
     }
 }
