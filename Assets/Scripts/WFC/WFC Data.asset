@@ -137,4 +137,4 @@ MonoBehaviour:
       downConnections: 0b000000
       leftConnections: 0300000006000000
       rightConnections: 0300000009000000
-    gridSize: {x: 30, y: 30}
+    gridSize: {x: 75, y: 75}
