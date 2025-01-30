@@ -33,8 +33,8 @@ MonoBehaviour:
       - {fileID: 2282317434351267688, guid: c469f9762f996a748b4b9c5fd3fe3462, type: 3}
       upConnections: 01000000030000000800000009000000
       downConnections: 00000000
-      leftConnections: 02000000060000000b00000010000000
-      rightConnections: 02000000070000000b00000011000000
+      leftConnections: 02000000060000000b000000
+      rightConnections: 02000000070000000b000000
     - tileType: 6
       possiblePrefabs:
       - {fileID: 117028209680302691, guid: acd0bad47e669e44d80064e34623bea6, type: 3}
@@ -81,32 +81,32 @@ MonoBehaviour:
       - {fileID: 1253131714415759127, guid: e1670b4d509cdcf4caa4ba1a4fcfc4fd, type: 3}
       - {fileID: 4218893285802365054, guid: ce21324d3775e8f4cbe5d07a33b885bd, type: 3}
       - {fileID: 6845671420864980454, guid: 0cdca2886ee3cfb41bdc82f62c07adbb, type: 3}
-      upConnections: 02000000000000000b0000001000000011000000
-      downConnections: 00000000030000000a0000000e0000000f000000
-      leftConnections: 00000000040000000c0000000f00000011000000
-      rightConnections: 00000000050000000d0000000e00000010000000
+      upConnections: 02000000000000000b000000
+      downConnections: 00000000030000000a000000
+      leftConnections: 00000000040000000c000000
+      rightConnections: 00000000050000000d000000
     - tileType: 3
       possiblePrefabs:
       - {fileID: 7433817052840603738, guid: 6fe8782c9000d1b499988519406b7e4b, type: 3}
       - {fileID: 6652480156621738163, guid: 9bedc78de7251954d8d7073968f8f507, type: 3}
       upConnections: 00000000
       downConnections: 01000000020000000600000007000000
-      leftConnections: 08000000030000000a0000000e000000
-      rightConnections: 09000000030000000a0000000f000000
+      leftConnections: 08000000030000000a000000
+      rightConnections: 09000000030000000a000000
     - tileType: 4
       possiblePrefabs:
       - {fileID: 7963520051545734236, guid: d6d4bd5abcf3d9948a7b16a981bf38bf, type: 3}
       - {fileID: 7963520051545734236, guid: c2f7eb1ce6f38414e9de7a3925d56846, type: 3}
-      upConnections: 04000000060000000c0000000f000000
-      downConnections: 04000000080000000c00000011000000
+      upConnections: 04000000060000000c000000
+      downConnections: 04000000080000000c000000
       leftConnections: 01000000050000000700000009000000
       rightConnections: 00000000
     - tileType: 5
       possiblePrefabs:
       - {fileID: 418057692910898761, guid: d7d4e5f8c5301684687dade13d31fd57, type: 3}
       - {fileID: 8582260084899719986, guid: 7ae2851460038ed4da5f5896a8729eb5, type: 3}
-      upConnections: 05000000070000000d0000000e000000
-      downConnections: 05000000090000000d00000010000000
+      upConnections: 05000000070000000d000000
+      downConnections: 05000000090000000d000000
       leftConnections: 00000000
       rightConnections: 01000000080000000600000004000000
     - tileType: 13
@@ -137,32 +137,4 @@ MonoBehaviour:
       downConnections: 0b000000
       leftConnections: 0300000006000000
       rightConnections: 0300000009000000
-    - tileType: 14
-      possiblePrefabs:
-      - {fileID: 79366459745744472, guid: 5d27ef8fd8261ea4a839dbb33869b1c0, type: 3}
-      upConnections: 00000000
-      downConnections: 05000000
-      leftConnections: 00000000
-      rightConnections: 030000000f000000
-    - tileType: 15
-      possiblePrefabs:
-      - {fileID: 4297489568265745028, guid: e50b25fa623f0324eaedead07432660f, type: 3}
-      upConnections: 00000000
-      downConnections: 04000000
-      leftConnections: 030000000e000000
-      rightConnections: 00000000
-    - tileType: 16
-      possiblePrefabs:
-      - {fileID: 2171364063327655393, guid: e2b1b20eddc46ad41aaccac3949b9634, type: 3}
-      upConnections: 05000000
-      downConnections: 00000000
-      leftConnections: 00000000
-      rightConnections: 0200000011000000
-    - tileType: 17
-      possiblePrefabs:
-      - {fileID: 7310780643269712568, guid: 50233e6c3e4095b458fe80f197559349, type: 3}
-      upConnections: 05000000
-      downConnections: 00000000
-      leftConnections: 0200000010000000
-      rightConnections: 00000000
-    gridSize: {x: 30, y: 30}
+    gridSize: {x: 75, y: 75}
