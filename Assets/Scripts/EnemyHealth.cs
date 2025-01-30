@@ -3,23 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct SubstanceData
-{
+public struct SubstanceData {
     public float sizeLoss;
     public float damageIncrease;
     public float healthLoss;
     public float speedIncrease;
 }
 
-public class EnemyHealth : MonoBehaviour, IDamageable
-{
+public class EnemyHealth : MonoBehaviour, IDamageable {
     public float MaxHealth = 100f;
     public float Health { get; set; }
     public bool IsAlive { get { return Health > 0; } }
     public event Action OnDeath;
     public float contactDamagePercent = 0.1f;
     public float damageInterval = 1f;
-    public string collisionSoundName;
     private float _storedSizeLoss = 0f;
     private float _storedDamageIncrease = 0f;
     private float _storedHealthLost = 0f;
@@ -28,26 +25,20 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     private bool _collidingWithPlayer = false;
     private Coroutine _damageCoroutine;
 
-    
-
-    private void Start()
-    {
+    private void Start() {
         Health = MaxHealth;
     }
-    public void StoreSubstance(float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease)
-    {
+    public void StoreSubstance(float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease) {
         _storedSizeLoss += sizeLoss;
         _storedDamageIncrease += damageIncrease;
         _storedHealthLost += healthLoss;
         _storedSpeedIncrease += speedIncrease;
     }
-    public void StoreSubstance(float substance)
-    {
+    public void StoreSubstance(float substance) {
         _storedSizeLoss += substance;
     }
 
-    public void TakeDamage(float damage)
-    {
+    public void TakeDamage(float damage) {
         if (Health <= 0) return;
 
         Health -= damage;
@@ -55,31 +46,25 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         Debug.Log($"{gameObject.name} took {damage} damage. Health: {Health}");
 
-        if (!IsAlive)
-        {
+        if (!IsAlive) {
             OnDeath?.Invoke();
-            SoundManager.instance.Stop(collisionSoundName);
             Debug.Log($"{gameObject.name} has died.");
             ExcreteSubstance(); // Excrete if there is substance
             Destroy(gameObject);
 
         }
     }
-    private void OnTriggerEnter2D(Collider2D other)
-    {
+    private void OnTriggerEnter2D(Collider2D other) {
         if (other.TryGetComponent(out IProjectile projectile))
             TakeDamage(projectile.Damage);
 
     }
-    private void ExcreteSubstance()
-    {
+    private void ExcreteSubstance() {
         if (_storedSizeLoss <= 0 && _storedDamageIncrease <= 0 && _storedHealthLost <= 0 && _storedSpeedIncrease <= 0) return;
         GameObject substance = Instantiate(Resources.Load<GameObject>("Prefabs/SlimePickup"), transform.position, Quaternion.identity);
         ISubstance substanceComponent = substance.GetComponent<ISubstance>();
-        if (substanceComponent != null)
-        {
-            SubstanceData substanceData = new SubstanceData
-            {
+        if (substanceComponent != null) {
+            SubstanceData substanceData = new SubstanceData {
                 sizeLoss = _storedSizeLoss,
                 damageIncrease = _storedDamageIncrease,
                 healthLoss = _storedHealthLost,
@@ -94,37 +79,29 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         _storedSpeedIncrease = 0;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
+    private void OnCollisionEnter2D(Collision2D collision) {
+        if (collision.gameObject.CompareTag("Player")) {
             _collidingWithPlayer = true;
             if (_damageCoroutine == null)
                 _damageCoroutine = StartCoroutine(ApplyContinuousDamage());
 
-            SoundManager.instance.Play(collisionSoundName);
         }
     }
 
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
+    private void OnCollisionExit2D(Collision2D collision) {
+        if (collision.gameObject.CompareTag("Player")) {
             _collidingWithPlayer = false;
-            if (_damageCoroutine != null)
-            {
+            if (_damageCoroutine != null) {
                 StopCoroutine(_damageCoroutine);
                 _damageCoroutine = null;
-
-                SoundManager.instance.Stop(collisionSoundName);
             }
         }
     }
 
-    private IEnumerator ApplyContinuousDamage()
-    {
-        while (_collidingWithPlayer)
-        {
+
+
+    private IEnumerator ApplyContinuousDamage() {
+        while (_collidingWithPlayer) {
             float damage = contactDamagePercent * MaxHealth;
             TakeDamage(damage);
             yield return new WaitForSeconds(damageInterval);
