@@ -60,7 +60,7 @@ public class MapManager : MonoBehaviour {
         cell.possibleTiles = new List<Tile>() { tile };
         cell.collapsed = true;
         wfcGenerator.wfcData.wfcObject.grid[x, y] = cell;
-        Debug.Log($"SetCellToTile: Set cell at x: {x}, y: {y} to tile {tile.tileType}");
+        //Debug.Log($"SetCellToTile: Set cell at x: {x}, y: {y} to tile {tile.tileType}");
     }
 
     public void GenerateNavigationGrid() {

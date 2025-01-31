@@ -65,6 +65,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 SoundManager.instance.Stop(collisionSoundName);
 
 
+            RunManager.Instance.DecreaseRemainingEnemies();
+
             Debug.Log($"{gameObject.name} has died.");
             ExcreteSubstance(); // Excrete if there is substance
 

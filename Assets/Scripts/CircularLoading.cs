@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class CircularLoading : MonoBehaviour {
     public Image loadingImage;
-    public Text loadingText;
 
     [Range(0,1)]
     public float loadingProgress = 0;
@@ -18,11 +17,13 @@ public class CircularLoading : MonoBehaviour {
 
     private void Start() {
         if (loadingImage != null) {
-            loadingText.text = "Loading...";
         }   
     }
 
     private void Update() {
+        // 3 second loading time
+        loadingProgress += Time.deltaTime / 5;
+
         loadingImage.fillAmount = loadingProgress;
 
         if (loadingProgress >= 1) {

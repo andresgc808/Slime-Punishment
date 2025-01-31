@@ -43,6 +43,8 @@ public class RunManager : MonoBehaviour
         _canAccessBossRoom = false;
         _timeSinceStart = 0f;
         timerOngoing = true;
+
+        Debug.Log($"Remaining enemies: {_remainingEnemies}");
     }
 
     private void Update()
@@ -62,6 +64,8 @@ public class RunManager : MonoBehaviour
     public void DecreaseRemainingEnemies()
     {
         _remainingEnemies--;
+
+        Debug.Log($"Remaining enemies: {_remainingEnemies}");
 
         if (_remainingEnemies <= 0)
         {
