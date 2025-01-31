@@ -58,20 +58,19 @@ public class Spawner : MonoBehaviour
     }
 
     private IEnumerator spawnEnemy() {
-        while (true) {
-            yield return new WaitForSeconds(spawnRate);
+        yield return new WaitForSeconds(spawnRate);
             
 
-            if (canSpawnAtPoint1) {
-                Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-            }
-            if (canSpawnAtPoint2) {
-                Instantiate(enemyPrefab, spawnPoint2.position, Quaternion.identity);
-            }
-            if (canSpawnAtPoint3) {
-                Instantiate(enemyPrefab, spawnPoint3.position, Quaternion.identity);
-            }
-            canSpawn = true;
+        if (canSpawnAtPoint1) {
+            Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
         }
+        if (canSpawnAtPoint2) {
+            Instantiate(enemyPrefab, spawnPoint2.position, Quaternion.identity);
+        }
+        if (canSpawnAtPoint3) {
+            Instantiate(enemyPrefab, spawnPoint3.position, Quaternion.identity);
+        }
+        canSpawn = true;
+        
     }
 }

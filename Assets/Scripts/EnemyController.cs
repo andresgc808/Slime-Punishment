@@ -28,6 +28,14 @@ public class EnemyController : MonoBehaviour
         UpdateSpriteFlip(direction);
     }
 
+    public void OnTriggerEnter2D(Collider2D collision) {
+        // deal 30 damage to player and self desrtuct
+        if (collision.gameObject.tag == "Player") {
+            collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(30);
+            Destroy(gameObject);
+        }
+    }
+
     private void UpdateSpriteFlip(Vector2 direction)
     {
 

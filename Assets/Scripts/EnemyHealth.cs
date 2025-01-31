@@ -70,7 +70,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             // check if own tag is enemy
             if (gameObject.CompareTag("Enemy")){
                 if (SceneManager.GetActiveScene().name != "Tutorial")
-                    RunManager.Instance.DecreaseRemainingEnemies();
+                    if (RunManager.Instance != null)
+                        RunManager.Instance.DecreaseRemainingEnemies();
             }
 
             Debug.Log($"{gameObject.name} has died.");
