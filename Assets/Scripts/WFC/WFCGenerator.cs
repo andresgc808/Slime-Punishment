@@ -4,6 +4,8 @@ using System.Linq;
 using System;
 using System.Diagnostics;
 using Random = UnityEngine.Random;
+using System.IO;
+using System.Xml;
 
 public enum Direction
 {
@@ -20,6 +22,11 @@ public class WFCGenerator : MonoBehaviour
     public Vector3 offset;
     public bool autoRun = false;
     public int seed = -1; // -1 means no specific seed.
+
+    public string saveFileName = "wfc_map.json"; // Name of save file
+    public string saveDirectory = "Assets/MapData"; // Directory to save map data.
+
+
 
     private int _totalNodesExpanded;
     private int _totalRetries;
@@ -84,7 +91,8 @@ public class WFCGenerator : MonoBehaviour
         if (generationSuccess)
         {
             VisualizeMap();
-           UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
+            SaveMapData();
+            UnityEngine.Debug.Log($"Map Generation Complete (No Cache, No FC). Nodes Expanded: {_totalNodesExpanded}. Retries: {_totalRetries}. Time: {elapsedMilliseconds}ms. Seed: {seed}");
         }
         else if (_generationTimedOut)
         {
@@ -369,8 +377,54 @@ public class WFCGenerator : MonoBehaviour
         }
     }
 
+    private void SaveMapData() {
+        if (wfcData?.wfcObject?.grid == null) {
+            UnityEngine.Debug.LogError("SaveMapData: Grid is null, cannot save.");
+            return;
+        }
+        string filePath = Path.Combine(saveDirectory, saveFileName);
 
-     private int _retryCount;
+        try {
+            MapDataToSave mapData = new MapDataToSave();
+            mapData.gridSize = wfcData.wfcObject.gridSize;
+            mapData.collapsedGrid = new List<CollapsedCellData>();
+            for (int x = 0; x < wfcData.wfcObject.gridSize.x; x++) {
+                for (int y = 0; y < wfcData.wfcObject.gridSize.y; y++) {
+                    WFCGridCell cell = wfcData.wfcObject.grid[x, y];
+                    if (cell.collapsed) {
+                        CollapsedCellData collapsedCellData = new CollapsedCellData();
+                        collapsedCellData.x = cell.x;
+                        collapsedCellData.y = cell.y;
+                        collapsedCellData.tileType = cell.possibleTiles[0].tileType;
+                        mapData.collapsedGrid.Add(collapsedCellData);
+                    }
+                }
+            }
+
+            string json = JsonUtility.ToJson(mapData, true);
+
+            File.WriteAllText(filePath, json);
+            UnityEngine.Debug.Log($"WFCGenerator: Map data saved to {filePath}");
+        } catch (Exception e) {
+            UnityEngine.Debug.LogError($"WFCGenerator: Failed to save map data: {e.Message}");
+        }
+    }
+
+    [System.Serializable]
+    private class MapDataToSave {
+        public Vector2Int gridSize;
+        public List<CollapsedCellData> collapsedGrid;
+    }
+
+    [System.Serializable]
+    private class CollapsedCellData {
+        public int x;
+        public int y;
+        public TileType tileType;
+    }
+
+
+    private int _retryCount;
     private bool WFCBasic(bool useCache, bool useForwardChecking)
     {
           if (_generationStopwatch.ElapsedMilliseconds > 90) // 2 minutes timeout
