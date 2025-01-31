@@ -100,11 +100,11 @@ public class TurretSpread : MonoBehaviour {
             // iterate through the number of bullets
             for (int j = 0; j < bulletCount; j++) {
                 // calculate the angle of the bullet
-                float angle = (j % 2 == 0 ? 1 : -1) * (spreadAngle / bulletCount) * (j / 2);
+                float angle = (j % 2 == 0 ? 1 : -1) * (spreadAngle) * (j / 2);
                 Vector2 bulletDirection = Quaternion.Euler(0, 0, angle) * direction;
 
                 // create the bullet
-                GameObject bullet = Instantiate(Resources.Load<GameObject>("Prefabs/BlueBullet"), transform.position, Quaternion.identity);
+                GameObject bullet = Instantiate(Resources.Load<GameObject>("Prefabs/PinkBullet"), transform.position, Quaternion.identity);
                 IProjectile projectileComponent = bullet.GetComponent<IProjectile>();
                 if (projectileComponent != null) {
                     projectileComponent.LaunchProjectile(transform.position, bulletDirection);

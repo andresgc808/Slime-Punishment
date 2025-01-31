@@ -30,7 +30,9 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     [SerializeField] public bool isSpanwer = false;
 
-    
+    [SerializeField] public float spawnerNumber = 0;
+
+
 
     private void Start()
     {
@@ -74,7 +76,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 // find object of type spawner and decrease count
                 Spawner spawner = FindObjectOfType<Spawner>();
                 if (spawner != null) {
-                    spawner.DecreaseSpawnerCount();
+                    spawner.DecreaseSpawnerCount(spawnerNumber);
                 }
             }
             Destroy(gameObject);

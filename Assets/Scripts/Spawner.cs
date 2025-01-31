@@ -10,6 +10,10 @@ public class Spawner : MonoBehaviour
     public Transform spawnPoint2;
     public Transform spawnPoint3;
 
+    public bool canSpawnAtPoint1 = true;
+    public bool canSpawnAtPoint2 = true;
+    public bool canSpawnAtPoint3 = true;
+
     public float spawnCount = 3;
 
 
@@ -38,10 +42,18 @@ public class Spawner : MonoBehaviour
         } 
     }
 
-    public void DecreaseSpawnerCount() {
+    public void DecreaseSpawnerCount(float spawnerNumber) {
         spawnCount--;
         if (spawnCount <= 0) {
             Destroy(gameObject);
+        }
+
+        if (spawnerNumber == 1) {
+            canSpawnAtPoint1 = false;
+        } else if (spawnerNumber == 2) {
+            canSpawnAtPoint2 = false;
+        } else if (spawnerNumber == 3) {
+            canSpawnAtPoint3 = false;
         }
     }
 
@@ -50,10 +62,15 @@ public class Spawner : MonoBehaviour
             yield return new WaitForSeconds(spawnRate);
             
 
-
-            Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-            Instantiate(enemyPrefab, spawnPoint2.position, Quaternion.identity);
-            Instantiate(enemyPrefab, spawnPoint3.position, Quaternion.identity);
+            if (canSpawnAtPoint1) {
+                Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
+            }
+            if (canSpawnAtPoint2) {
+                Instantiate(enemyPrefab, spawnPoint2.position, Quaternion.identity);
+            }
+            if (canSpawnAtPoint3) {
+                Instantiate(enemyPrefab, spawnPoint3.position, Quaternion.identity);
+            }
             canSpawn = true;
         }
     }
