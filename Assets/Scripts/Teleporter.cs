@@ -8,6 +8,7 @@ public class Teleporter : MonoBehaviour
     // Changes the scene to the next level if RunManager canAccessBossRoom is true
     public GameObject loadingCircle;
     public bool inPortal = false;
+    [SerializeField] public GameObject intructions;
     // Update is called once per frame
     void Update()
     {
@@ -25,8 +26,10 @@ public class Teleporter : MonoBehaviour
                 inPortal = true;
                 Debug.Log("Teleporting to next level");
                 loadingCircle.SetActive(true);
+            } else if (other.CompareTag("Player") && !RunManager.Instance.CanAccessBossRoom) {
+                intructions.SetActive(true);
             }
-        } else {
+            } else {
             if (other.CompareTag("Player") && SceneManager.GetActiveScene().buildIndex == 1) {
                 inPortal = true;
                 Debug.Log("Teleporting to next level");
@@ -39,6 +42,9 @@ public class Teleporter : MonoBehaviour
         if (collision.CompareTag("Player")) {
             inPortal = false;
             loadingCircle.SetActive(false);
+        }
+        if (intructions != null) {
+            intructions.SetActive(false);
         }
     }
     public void LoadNextLevel() {
