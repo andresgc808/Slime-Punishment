@@ -74,6 +74,7 @@ public class RunManager : MonoBehaviour
             //save score
             if (HighScoreTable.Instance != null)
             {
+                // change it so the player can add initials
                 HighScoreTable.Instance.AddHighscoreEntry(timeEntry, "AAA");
             }
         }
