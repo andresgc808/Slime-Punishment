@@ -538,6 +538,58 @@ Transform:
   - {fileID: 1491205994}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &377505988
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 377505990}
+  - component: {fileID: 377505989}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &377505989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377505988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0147b7311cc54149b1e97bde6128001, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: tetra
+    clip: {fileID: 8300000, guid: a669a0a8c94afe8408d253f3164b6bf3, type: 3}
+    volume: 0.209
+    pitch: 0
+    isLoop: 1
+    hasCooldown: 0
+    source: {fileID: 0}
+--- !u!4 &377505990
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377505988}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 19.086523, y: 21.801235, z: -0.0473926}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &408020784
 GameObject:
   m_ObjectHideFlags: 0
@@ -1203,6 +1255,8 @@ MonoBehaviour:
   contactDamagePercent: 0.1
   damageInterval: 1
   collisionSoundName: 
+  isSpanwer: 0
+  spawnerNumber: 0
 --- !u!4 &1069341170 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2979906297356650225, guid: 15f7834c91f96c84495b16595a078e47, type: 3}
@@ -32671,3 +32725,4 @@ SceneRoots:
   - {fileID: 996350100}
   - {fileID: 193141208}
   - {fileID: 376055238}
+  - {fileID: 377505990}

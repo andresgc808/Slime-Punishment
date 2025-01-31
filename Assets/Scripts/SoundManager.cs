@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro.Examples;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : MonoBehaviour
 {
@@ -44,7 +45,7 @@ public class SoundManager : MonoBehaviour
             Debug.Log($"{audioClips.Length} audio clips loaded from SFX folder.");
         }
 
-        sounds = new Sound[audioClips.Length];
+        sounds = new Sound[audioClips.Length + 1]; // +1 for the theme song
 
         for (int i = 0; i < audioClips.Length; i++)
         {
@@ -59,6 +60,26 @@ public class SoundManager : MonoBehaviour
                 hasCooldown = false
             };
             Debug.Log($"Sound '{clip.name}' initialized.");
+        }
+
+        // Add the theme song
+        AudioClip themeClip = Resources.Load<AudioClip>("SFX/Tetra by Keegan Lee_1");
+        if (themeClip != null)
+        {
+            sounds[audioClips.Length] = new Sound
+            {
+                name = "Theme",
+                clip = themeClip,
+                volume = 1f,
+                pitch = 1f,
+                isLoop = true,
+                hasCooldown = false
+            };
+            Debug.Log("Theme song 'Tetra by Keegan Lee_1' initialized.");
+        }
+        else
+        {
+            Debug.LogError("Theme song 'Tetra by Keegan Lee_1' not found in SFX folder!");
         }
 
         foreach (Sound sound in sounds)
@@ -80,8 +101,13 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        // for possible theme music if we end up making it
-        // Play('Theme');
+        // Play the theme song
+        // if boss room then play theme song
+        if (SceneManager.GetActiveScene().name == "BossRoom")
+        {
+            Play("Theme");
+        }
+        
     }
 
     public void Play(string name)
@@ -90,7 +116,7 @@ public class SoundManager : MonoBehaviour
 
         if (sound == null)
         {
-            Debug.LogError("Sound " + name + " Not Found!");
+            //Debug.LogError("Sound " + name + " Not Found!");
             return;
         }
 
@@ -106,7 +132,7 @@ public class SoundManager : MonoBehaviour
 
         if (sound == null)
         {
-            Debug.LogError("Sound " + name + " Not Found!");
+            //Debug.LogError("Sound " + name + " Not Found!");
             return;
         }
 

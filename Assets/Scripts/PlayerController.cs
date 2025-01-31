@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour {
 
     [SerializeField] private float _healthDecreasePerShot = 0.05f; //percentage
 
+    public string shootingSoundName;
+    public string movementSoundName;
+
     private Vector2 _movement;
     private Rigidbody2D _rb;
     private PlayerHealth _playerHealth;
@@ -95,6 +98,9 @@ public class PlayerController : MonoBehaviour {
         if (!dodging) {
             _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
 
+            if (SoundManager.instance != null)
+                SoundManager.instance.Play(movementSoundName);
+
             _rb.velocity = _movement * _moveSpeed;
             UpdateSpriteFlip();
         }
@@ -103,6 +109,8 @@ public class PlayerController : MonoBehaviour {
         // Handle shooting
         if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive) {
             ShootProjectile();
+            if (SoundManager.instance != null)
+                SoundManager.instance.Play(shootingSoundName);
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) {
