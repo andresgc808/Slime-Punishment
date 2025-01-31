@@ -28,7 +28,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     private bool _collidingWithPlayer = false;
     private Coroutine _damageCoroutine;
 
-    
+    [SerializeField] public bool isSpanwer = false;
+
+    [SerializeField] public float spawnerNumber = 0;
+
+
 
     private void Start()
     {
@@ -63,8 +67,18 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 SoundManager.instance.Stop(collisionSoundName);
 
 
+            RunManager.Instance.DecreaseRemainingEnemies();
+
             Debug.Log($"{gameObject.name} has died.");
             ExcreteSubstance(); // Excrete if there is substance
+
+            if (isSpanwer) {
+                // find object of type spawner and decrease count
+                Spawner spawner = FindObjectOfType<Spawner>();
+                if (spawner != null) {
+                    spawner.DecreaseSpawnerCount(spawnerNumber);
+                }
+            }
             Destroy(gameObject);
 
         }

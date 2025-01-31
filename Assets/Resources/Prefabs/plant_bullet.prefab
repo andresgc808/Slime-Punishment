@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: plant_bullet
       objectReference: {fileID: 0}
+    - target: {fileID: 3626916397498700004, guid: 8a4416f0b2bc7c34fa1678014b29a9e1, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -2676870058411949489, guid: ce0d3ad927a90694a8fc2611c7ccbfe1, type: 3}
     - target: {fileID: 7878350319992209165, guid: 8a4416f0b2bc7c34fa1678014b29a9e1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
