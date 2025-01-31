@@ -12,6 +12,16 @@ public class EnemyMovement : MonoBehaviour {
     private Vector3 _currentVelocity;
     private float _smoothTime = 0.1f;
 
+    private float timeSinceLastAttack = 0f;
+
+    private Animator animator;
+
+    private void Awake() {
+        // get animator
+        animator = GetComponent<Animator>();
+    }
+
+
     private void Start() {
         if (_mapManager == null) {
             Debug.LogWarning("EnemyMovement: Map manager not found on this object, attempting to find from scene.");
@@ -56,6 +66,19 @@ public class EnemyMovement : MonoBehaviour {
             MoveAlongPath();
         } else {
             _isMoving = false; // Stop moving if player is out of aggro range
+        }
+
+        timeSinceLastAttack += Time.deltaTime;
+
+        if (distanceToPlayer <= 0.5f && timeSinceLastAttack > 2f) {
+            // Attack player
+            Debug.Log("Attacking player");
+            animator.SetBool("inAttackRange", true);
+            // directly deal damage to player
+            playerTransform.GetComponent<PlayerHealth>().TakeDamage(15);
+            timeSinceLastAttack = 0f;
+        } else if (timeSinceLastAttack > 1f && timeSinceLastAttack < 2f) {
+            animator.SetBool("inAttackRange", false);
         }
     }
 
