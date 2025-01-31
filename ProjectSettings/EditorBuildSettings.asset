@@ -9,6 +9,15 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 0f75b9bcd6a5dee46b0af52767d3973d
   - enabled: 1
+    path: Assets/Scenes/Tutorial.unity
+    guid: 88a2ed2496eb17c4481b656ccccc4305
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/CellularAutomata.unity
+    guid: 92c3be60cf160054c8437f6b4d16face
+  - enabled: 1
+    path: Assets/Scenes/BossRoom.unity
+    guid: 62ca28889342a45b2a7378f448b32536
   m_configObjects: {}
