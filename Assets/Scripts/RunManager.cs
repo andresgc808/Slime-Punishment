@@ -49,7 +49,8 @@ public class RunManager : MonoBehaviour
 
     private void Update()
     {
-        UpdateTimer();
+        if (timerOngoing) 
+            UpdateTimer();
         _timeSinceStart += Time.deltaTime;
     }
 
@@ -66,6 +67,11 @@ public class RunManager : MonoBehaviour
         _remainingEnemies--;
 
         Debug.Log($"Remaining enemies: {_remainingEnemies}");
+
+        foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            Debug.Log(enemy.name);
+        }
 
         if (_remainingEnemies <= 0)
         {
