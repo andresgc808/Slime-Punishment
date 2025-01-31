@@ -46,7 +46,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
 
     public void Heal(float healAmount) {
         if (Health >= MaxHealth) return;
-        float healed = Mathf.Min(healAmount, MaxHealth - Health);
+        float healed = Mathf.Min(healAmount, MaxHealth - Health, 100);
         Health += healed;
         Debug.Log($"{gameObject.name} healed {healed}. Health: {Health}");
         UpdateHealthUI();
