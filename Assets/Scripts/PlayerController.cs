@@ -9,21 +9,19 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _baseMoveSpeed;
 
-    [SerializeField] private float _sizeDecreasePerShot = 0.05f; // percentage
+    [SerializeField] private float _sizeDecreasePerShot = 0.05f; // flat value
     [SerializeField] private float _minSizePercent = 0.5f;
     private Vector3 _baseScale;
 
-
-    [SerializeField] private float _damageIncreasePerShot = 0.05f; // percentage
+    [SerializeField] private float _damageIncreasePerShot = 0.05f; // flat value
     [SerializeField] private float _currentDamageMultiplier = 1f;
     [SerializeField] private float _maxDamageMultiplier = 3f;
 
-    [SerializeField] private float _healthDecreasePerShot = 0.05f; //percentage
+    [SerializeField] private float _healthDecreasePerShot = 5f; // flat value
 
     private Vector2 _movement;
     private Rigidbody2D _rb;
     private PlayerHealth _playerHealth;
-
 
     private float _totalSizeLost;
     private float _totalDamageIncrease;
@@ -37,7 +35,6 @@ public class PlayerController : MonoBehaviour {
     private float lastDodgeTime;
 
     private bool dodging;
-
 
     private void Awake() {
         _rb = GetComponent<Rigidbody2D>();
@@ -56,20 +53,24 @@ public class PlayerController : MonoBehaviour {
 
         _baseScale = _spriteTransform.localScale;  // Base scale is now from the child.
         ResetLostSubstance();
-
     }
-    private (float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease)
-        UpdateStats() {
-        // Calculate changes as percentages of current values
+
+    private (float sizeLoss, float damageIncrease, float healthLoss, float speedIncrease) UpdateStats() {
+        // Calculate changes as flat values
         float sizeLoss = _sizeDecreasePerShot;
-        float damageIncrease = _currentDamageMultiplier * _damageIncreasePerShot;
-        float healthLoss = _playerHealth.MaxHealth * _healthDecreasePerShot / 100f;
-        float speedIncrease = _currentSpeedMultiplier * 0.1f;
+        float damageIncrease = _damageIncreasePerShot;
+        float healthLoss = _healthDecreasePerShot;
+        float speedIncrease = 0.1f; // flat value
 
         // Apply size change
-        _totalSizeLost += sizeLoss;
+        // only apply size change if it doesn't go below the minimum size
+        if (_totalSizeLost + sizeLoss <= 1 - _minSizePercent)
+            _totalSizeLost += sizeLoss;
+        else {
+            sizeLoss = 1 - _minSizePercent - _totalSizeLost;
+            _totalSizeLost = 1 - _minSizePercent;
+        }
         float newSize = Mathf.Max(_minSizePercent, 1 - _totalSizeLost);
-
 
         Debug.Log($"SizeLoss: {sizeLoss}, NewSize: {newSize}, MinSizePercent: {_minSizePercent}");
 
@@ -80,25 +81,23 @@ public class PlayerController : MonoBehaviour {
         _totalDamageIncrease += damageIncrease;
 
         // Apply health change
-        _playerHealth.ReduceMaxHealth(_healthDecreasePerShot * 100f);
+        _playerHealth.ReduceMaxHealth(healthLoss);
         _totalHealthLost += healthLoss;
-        // Apply Speed change
+
+        // Apply speed change
         _currentSpeedMultiplier = Mathf.Min(_maxSpeedMultiplier, _currentSpeedMultiplier + speedIncrease);
         _totalSpeedIncrease += speedIncrease;
         _moveSpeed = _baseMoveSpeed * _currentSpeedMultiplier; // update speed
+
         return (sizeLoss, damageIncrease, healthLoss, speedIncrease);
     }
 
-
     private void Update() {
-
         if (!dodging) {
             _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
-
             _rb.velocity = _movement * _moveSpeed;
             UpdateSpriteFlip();
         }
-        
 
         // Handle shooting
         if (Mouse.current.leftButton.wasPressedThisFrame && _playerHealth.IsAlive) {
@@ -113,7 +112,6 @@ public class PlayerController : MonoBehaviour {
     private void UpdateSpriteFlip() {
         if (_movement.x > 0) {
             _spriteRenderer.flipX = false;
-
         } else if (_movement.x < 0) {
             _spriteRenderer.flipX = true;
         }
@@ -138,7 +136,6 @@ public class PlayerController : MonoBehaviour {
             }
             projectileComponent.LaunchProjectile(spawnPosition, direction);
         }
-
     }
 
     public void IncreaseSizeAndDamage(SubstanceData substance) {
@@ -153,7 +150,7 @@ public class PlayerController : MonoBehaviour {
 
         // Recover health
         _totalHealthLost = Mathf.Max(0, _totalHealthLost - substance.healthLoss);
-        _playerHealth.Heal(substance.healthLoss * 100f);
+        _playerHealth.Heal(substance.healthLoss);
 
         // Recover speed
         _totalSpeedIncrease = Mathf.Max(0, _totalSpeedIncrease - substance.speedIncrease);
@@ -196,7 +193,6 @@ public class PlayerController : MonoBehaviour {
 
             dodging = false;
         }
-        
     }
 
     private void ResetLostSubstance() {
