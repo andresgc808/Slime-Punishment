@@ -37,8 +37,8 @@ public class Spawner : MonoBehaviour
     {
         // use coroutine for precise timing
         if (canSpawn && spawnCount > 0) {
-            StartCoroutine(spawnEnemy());
             canSpawn = false;
+            StartCoroutine(spawnEnemy());
         } 
     }
 
