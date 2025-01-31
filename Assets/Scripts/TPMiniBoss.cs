@@ -23,7 +23,6 @@ public class TPMiniBoss : MonoBehaviour {
 
     private State _currentState;
 
-
     private void Awake() {
         _rb = GetComponent<Rigidbody2D>();
         if (target == null) // sets target to player if not set
@@ -49,7 +48,6 @@ public class TPMiniBoss : MonoBehaviour {
         if (_currentState == State.Idle && Vector2.Distance(transform.position, target.position) < agroRange) {
             _currentState = State.CirclePlayer;
         }
-
     }
 
     private IEnumerator StateMachine() {
@@ -95,10 +93,9 @@ public class TPMiniBoss : MonoBehaviour {
             StopCoroutine(_circleShootCoroutine);
         _circleShootCoroutine = null;
 
-
         _currentState = State.TeleportAttack;
-
     }
+
     private IEnumerator CircleShootingAttack() {
         while (_currentState == State.CirclePlayer) {
             GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/BlueBullet"), transform.position, Quaternion.identity);
@@ -106,14 +103,12 @@ public class TPMiniBoss : MonoBehaviour {
             if (projectileComponent != null) {
                 projectileComponent.LaunchProjectile(transform.position, ((Vector2)target.position - (Vector2)transform.position).normalized);
             }
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.25f);
         }
-
     }
 
     private IEnumerator TeleportAttackCoroutine() {
         _rb.velocity = Vector2.zero;
-
 
         int teleportCount = 3;
 
@@ -138,36 +133,22 @@ public class TPMiniBoss : MonoBehaviour {
         _currentState = State.CirclePlayer;
     }
 
-
-
     private IEnumerator ShootBarrageCoroutine() {
         if (playerPosition == null) {
             Debug.LogError($"No playerPosition set for {gameObject.name}!");
             yield break;
         }
         Vector2 direction = ((Vector2)playerPosition.position - (Vector2)transform.position).normalized;
-        Vector2 leftDirection = Quaternion.Euler(0, 0, 5) * direction;
-        Vector2 rightDirection = Quaternion.Euler(0, 0, -5) * direction;
-        Vector2 right10degress = Quaternion.Euler(0, 0, 10) * direction;
-        Vector2 left10degress = Quaternion.Euler(0, 0, -10) * direction;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
+            float angle = (i % 2 == 0 ? 1 : -1) * ((i / 2) + 1) * 5; // Alternate left and right, increasing angle
+            Vector2 bulletDirection = Quaternion.Euler(0, 0, angle) * direction;
+
             GameObject projectile = Instantiate(Resources.Load<GameObject>("Prefabs/BlueBullet"), transform.position, Quaternion.identity);
             IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
             if (projectileComponent != null) {
-                if (i == 0) {
-                    projectileComponent.LaunchProjectile(transform.position, direction);
-                } else if (i == 1) {
-                    projectileComponent.LaunchProjectile(transform.position, leftDirection);
-                } else if (i == 2) {
-                    projectileComponent.LaunchProjectile(transform.position, rightDirection);
-                } else if (i == 3) {
-                    projectileComponent.LaunchProjectile(transform.position, right10degress);
-                } else if (i == 4) {
-                    projectileComponent.LaunchProjectile(transform.position, left10degress);
-                }
+                projectileComponent.LaunchProjectile(transform.position, bulletDirection);
             }
-            yield return new WaitForSeconds(0.25f);
         }
     }
 
