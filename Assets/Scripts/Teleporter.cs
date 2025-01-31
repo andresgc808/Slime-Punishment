@@ -14,16 +14,24 @@ public class Teleporter : MonoBehaviour
         if (inPortal && Input.GetKeyDown(KeyCode.E)) {
             LoadNextLevel();
         }
+
+        
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        Debug.Log("collision" + RunManager.Instance.CanAccessBossRoom);
-        if (other.CompareTag("Player") && RunManager.Instance.CanAccessBossRoom)
-        {
-            inPortal = true;
-            Debug.Log("Teleporting to next level");
-            loadingCircle.SetActive(true); 
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (RunManager.Instance != null) {
+            Debug.Log("collision" + RunManager.Instance.CanAccessBossRoom);
+            if (other.CompareTag("Player") && RunManager.Instance.CanAccessBossRoom) {
+                inPortal = true;
+                Debug.Log("Teleporting to next level");
+                loadingCircle.SetActive(true);
+            }
+        } else {
+            if (other.CompareTag("Player") && SceneManager.GetActiveScene().buildIndex == 1) {
+                inPortal = true;
+                Debug.Log("Teleporting to next level");
+                loadingCircle.SetActive(true);
+            }
         }
     }
 
