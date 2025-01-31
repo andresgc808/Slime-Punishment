@@ -6,10 +6,10 @@ public class TPMiniBoss : MonoBehaviour {
     [SerializeField] private Transform target;
     [SerializeField] private List<Transform> teleportPositions;
     [SerializeField] private Transform playerPosition;
-    [SerializeField] private float minPlayerCirclingDistance = 3.5f;
-    [SerializeField] private float maxPlayerCirclingDistance = 7f;
+    [SerializeField] private float minPlayerCirclingDistance = 20f;
+    [SerializeField] private float maxPlayerCirclingDistance = 40f;
     [SerializeField] private float _moveSpeed = 2f;
-    [SerializeField] private float agroRange = 5f;
+    [SerializeField] private float agroRange = 100f;
 
     private Rigidbody2D _rb;
     private Coroutine _stateMachineCoroutine;
