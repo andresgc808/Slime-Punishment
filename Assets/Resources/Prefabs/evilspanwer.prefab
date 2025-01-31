@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4487178333897867606}
   m_Layer: 0
   m_Name: evilspanwer
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -165,6 +165,7 @@ MonoBehaviour:
   damageInterval: 1
   collisionSoundName: 
   isSpanwer: 1
+  spawnerNumber: 0
 --- !u!61 &2447590389825028430
 BoxCollider2D:
   m_ObjectHideFlags: 0
