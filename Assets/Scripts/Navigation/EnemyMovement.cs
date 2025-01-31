@@ -16,6 +16,8 @@ public class EnemyMovement : MonoBehaviour {
 
     private Animator animator;
 
+    public string movementSoundName;
+
     private void Awake() {
         // get animator
         animator = GetComponent<Animator>();
@@ -112,6 +114,13 @@ public class EnemyMovement : MonoBehaviour {
         }
     }
     private void MoveAlongPath() {
+        if (_isMoving) {
+            if (SoundManager.instance != null)
+                SoundManager.instance.Play(movementSoundName);
+        } else { // stop moving sound
+            if (SoundManager.instance != null)
+                SoundManager.instance.Stop(movementSoundName);
+        }
         if (_currentPath == null || _currentPath.Count == 0) {
             _isMoving = false;
             return;

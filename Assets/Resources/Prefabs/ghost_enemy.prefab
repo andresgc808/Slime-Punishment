@@ -101,7 +101,7 @@ MonoBehaviour:
   MaxHealth: 100
   contactDamagePercent: 0.1
   damageInterval: 1
-  collisionSoundName: 
+  collisionSoundName: contact_damage
   isSpanwer: 0
   spawnerNumber: 0
 --- !u!114 &834911747154538253

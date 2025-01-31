@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviour {
 
     [SerializeField] private float _healthDecreasePerShot = 5f; // flat value
 
+    public string shootSoundName;
+    public string movementSoundName;
+
     private Vector2 _movement;
     private Rigidbody2D _rb;
     private PlayerHealth _playerHealth;
@@ -35,6 +38,7 @@ public class PlayerController : MonoBehaviour {
     private float lastDodgeTime;
 
     private bool dodging;
+    private bool isMoving;
 
     private void Awake() {
         _rb = GetComponent<Rigidbody2D>();
@@ -97,6 +101,19 @@ public class PlayerController : MonoBehaviour {
             _movement.Set(InputManager.PlayerMovement.x, InputManager.PlayerMovement.y);
             _rb.velocity = _movement * _moveSpeed;
             UpdateSpriteFlip();
+
+            if (_movement != Vector2.zero && !isMoving) {
+                if (SoundManager.instance != null)
+                    SoundManager.instance.Play(movementSoundName);
+                isMoving = true;
+            } else if (_movement == Vector2.zero && isMoving) {
+                if (SoundManager.instance != null)
+                    SoundManager.instance.Stop(movementSoundName);
+                isMoving = false;
+            }
+        } else {
+            if (SoundManager.instance != null)
+                SoundManager.instance.Stop(movementSoundName);
         }
 
         // Handle shooting
@@ -126,6 +143,10 @@ public class PlayerController : MonoBehaviour {
         IProjectile projectileComponent = projectile.GetComponent<IProjectile>();
         if (projectileComponent != null) {
             if (projectileComponent is SlimeProjectile slimeProjectile) {
+
+                if (SoundManager.instance != null)
+                    SoundManager.instance.Play(shootSoundName);
+
                 slimeProjectile.DamageMultiplier = _currentDamageMultiplier;
                 slimeProjectile.SetDamage();
                 // Calculate the changes for this shot before updating stats.

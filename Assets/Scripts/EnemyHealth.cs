@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public struct SubstanceData
 {
@@ -67,8 +68,10 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 SoundManager.instance.Stop(collisionSoundName);
 
             // check if own tag is enemy
-            if (gameObject.CompareTag("Enemy"))
-                RunManager.Instance.DecreaseRemainingEnemies();
+            if (gameObject.CompareTag("Enemy")){
+                if (SceneManager.GetActiveScene().name != "Tutorial")
+                    RunManager.Instance.DecreaseRemainingEnemies();
+            }
 
             Debug.Log($"{gameObject.name} has died.");
             ExcreteSubstance(); // Excrete if there is substance

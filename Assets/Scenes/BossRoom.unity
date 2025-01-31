@@ -32961,6 +32961,93 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &2130609431
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2130609433}
+  - component: {fileID: 2130609432}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2130609432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130609431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0147b7311cc54149b1e97bde6128001, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: tetra
+    clip: {fileID: 8300000, guid: a669a0a8c94afe8408d253f3164b6bf3, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+  - name: tetra
+    clip: {fileID: 8300000, guid: 1d5fa27fc1f57c145936ab7c030aad0a, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+  - name: tetra
+    clip: {fileID: 8300000, guid: 2032843c41ed9434688330a435e0bb82, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+  - name: tetra
+    clip: {fileID: 8300000, guid: 68b00211f7e55dc4db7c845bc40e5b83, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+  - name: tetra
+    clip: {fileID: 8300000, guid: 3ab4987bda279f14b85afac1180633dc, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+  - name: tetra
+    clip: {fileID: 8300000, guid: 148ae8304d7d89d418288b629593ffe2, type: 3}
+    volume: 0
+    pitch: 0
+    isLoop: 0
+    hasCooldown: 0
+    source: {fileID: 0}
+--- !u!4 &2130609433
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130609431}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 24.665071, y: 21.095734, z: 0.88990235}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -32973,3 +33060,4 @@ SceneRoots:
   - {fileID: 817103304}
   - {fileID: 1133795102}
   - {fileID: 242055811}
+  - {fileID: 2130609433}

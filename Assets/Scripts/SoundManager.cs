@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro.Examples;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : MonoBehaviour
 {
@@ -81,6 +82,11 @@ public class SoundManager : MonoBehaviour
     private void Start()
     {
         // for possible theme music if we end up making it
+        if (SceneManager.GetActiveScene().name == "BossRoom")
+            Play("Tetra by Keegan Lee_1");
+        else if (SceneManager.GetActiveScene().name == "MainMenu") {
+            Play("LobbyAssMusicByKeegan");
+        }
         // Play('Theme');
     }
 
@@ -90,7 +96,7 @@ public class SoundManager : MonoBehaviour
 
         if (sound == null)
         {
-            Debug.LogError("Sound " + name + " Not Found!");
+            
             return;
         }
 
@@ -106,7 +112,7 @@ public class SoundManager : MonoBehaviour
 
         if (sound == null)
         {
-            Debug.LogError("Sound " + name + " Not Found!");
+            
             return;
         }
 

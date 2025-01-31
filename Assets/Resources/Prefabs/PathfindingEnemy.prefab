@@ -53,6 +53,7 @@ MonoBehaviour:
   aggroRange: 9
   playerTransform: {fileID: 0}
   _mapManager: {fileID: 0}
+  movementSoundName: 729200__techspiredminds__footsteps-gravelrockpebbles-58
 --- !u!212 &5865744104851289624
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -192,7 +193,7 @@ MonoBehaviour:
   MaxHealth: 35
   contactDamagePercent: 0.1
   damageInterval: 1
-  collisionSoundName: 
+  collisionSoundName: contact_damage
   isSpanwer: 0
   spawnerNumber: 0
 --- !u!95 &3108891875192024840
