@@ -57,4 +57,14 @@ public class BlueBullet : MonoBehaviour, IProjectile {
         }
         DestroyProjectile();
     }
+
+    private void OnTriggerEnter2D(Collider2D collision) {
+        if (collision.TryGetComponent(out IDamageable target)) {
+            // check if is player
+            if (collision.gameObject.layer == LayerMask.NameToLayer("Player")) {
+                target.TakeDamage(Damage);
+                DestroyProjectile();
+            }
+        }
+    }
 }
