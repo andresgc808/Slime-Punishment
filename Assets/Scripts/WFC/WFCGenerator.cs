@@ -424,7 +424,7 @@ public class WFCGenerator : MonoBehaviour
              WFCGridCell previousCell = new WFCGridCell();
             while (!finished)
             {
-                    if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+                    if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
                      {
                      _generationTimedOut = true;
                          return false;
@@ -485,7 +485,7 @@ public class WFCGenerator : MonoBehaviour
     }
 private void ResetSeedAndRetry()
     {
-           if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+           if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
             {
                  _generationTimedOut = true;
                 return;
@@ -504,7 +504,7 @@ private void ResetSeedAndRetry()
     }
      private bool WFCArcConsistency()
     {
-          if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+          if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
         {
             _generationTimedOut = true;
             return false;
@@ -534,7 +534,7 @@ private void ResetSeedAndRetry()
 
         for (int currentRetry = 0; currentRetry < maxRetries; currentRetry++)
         {
-              if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+              if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
             {
                  _generationTimedOut = true;
                 return false;
@@ -565,7 +565,7 @@ private void ResetSeedAndRetry()
 
             while (!finished)
             {
-                  if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+                  if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
                      {
                      _generationTimedOut = true;
                          return false;
@@ -641,7 +641,7 @@ private void ResetSeedAndRetry()
 
 private void ResetSeedAndRetryArc()
     {
-            if (_generationStopwatch.ElapsedMilliseconds > 120000) // 2 minutes timeout
+            if (_generationStopwatch.ElapsedMilliseconds > 30000) // 2 minutes timeout
             {
                  _generationTimedOut = true;
                 return;
